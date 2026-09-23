@@ -1,0 +1,357 @@
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: radial-gradient(ellipse at top right, var(--color-maroon-800) 0%, var(--color-ink-900) 60%);
+  color: var(--text-on-ink);
+  overflow: hidden;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 15% 85%, rgba(159, 34, 55, 0.35), transparent 45%);
+  pointer-events: none;
+}
+
+/* Two-column composition: copy left, catalogue imagery right. The old
+   single 88vh column left a large empty band below the buttons. */
+.heroInner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-8);
+  padding-block: var(--space-9);
+}
+
+.heroContent {
+  max-width: 34rem;
+}
+
+.heroVisual {
+  display: none;
+}
+
+.heroFrame {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: var(--shadow-lg);
+}
+
+.heroFrame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(200deg, transparent 40%, rgba(13, 13, 13, 0.45));
+  pointer-events: none;
+}
+
+.heroImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.eyebrow {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-maroon-400);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  text-wrap: balance;
+}
+
+.heroTitle {
+  font-size: clamp(3rem, 9vw, var(--fs-4xl));
+  color: var(--text-on-ink);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.heroTitle span {
+  font-size: clamp(1.5rem, 4vw, var(--fs-3xl));
+  font-style: italic;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.heroText {
+  font-size: var(--fs-md);
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 52ch;
+  margin-bottom: var(--space-7);
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.section {
+  padding-block: var(--space-9);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.sectionTitle {
+  font-size: var(--fs-2xl);
+  margin-bottom: var(--space-6);
+}
+
+.sectionHeader .sectionTitle {
+  margin-bottom: 0;
+}
+
+.sectionLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--brand);
+}
+
+.errorText {
+  color: var(--text-muted);
+}
+
+/* auto-fit rather than a fixed 4 columns: the shop has three categories, so
+   a hard repeat(4) left a quarter-width hole in the row. */
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+}
+
+.categoryTile {
+  position: relative;
+  isolation: isolate;
+  background: var(--bg-ink);
+  color: var(--text-on-ink);
+  border-radius: var(--radius-md);
+  min-height: 300px;
+  display: flex;
+  overflow: hidden;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.categoryTile:nth-child(2n) {
+  background: var(--color-maroon-700);
+}
+
+/* Catalogue photography, dimmed so the serif name stays legible. Absent an
+   image the tile keeps its original solid ink / maroon treatment. */
+.categoryTileImg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+  transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+.categoryTile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(13, 13, 13, 0.25) 0%, rgba(13, 13, 13, 0.85) 100%);
+  pointer-events: none;
+}
+
+.categoryTile:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.categoryTile:hover .categoryTileImg {
+  transform: scale(1.06);
+  opacity: 0.68;
+}
+
+.categoryTileBody {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-5);
+}
+
+.categoryTileTag {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  opacity: 0.6;
+}
+
+.categoryTileName {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  text-shadow: 0 1px 12px rgba(13, 13, 13, 0.5);
+}
+
+.categoryTileCta {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.perfumeSection {
+  background: linear-gradient(120deg, var(--color-maroon-900), var(--color-ink-900));
+  color: var(--text-on-ink);
+}
+
+.perfumeInner {
+  padding-block: var(--space-10);
+  max-width: 560px;
+}
+
+.eyebrowLight {
+  font-size: var(--fs-sm);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-maroon-400);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+.perfumeTitle {
+  color: var(--text-on-ink);
+  font-size: clamp(2rem, 5vw, var(--fs-3xl));
+  margin-bottom: var(--space-4);
+}
+
+.perfumeText {
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: var(--space-6);
+}
+
+/* A muted band so this section reads as its own block rather than a third
+   run of text on the cream page background. */
+.benefitsBand {
+  background: var(--bg-muted);
+  border-block: 1px solid var(--border-subtle);
+}
+
+.benefitsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-4);
+}
+
+.benefit {
+  padding: var(--space-5);
+  border-top: 3px solid var(--brand);
+  background: var(--bg-surface);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.benefit h3 {
+  font-size: var(--fs-md);
+  margin-bottom: var(--space-2);
+}
+
+.benefit p {
+  font-size: var(--fs-sm);
+  margin: 0;
+}
+
+.reviewsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+}
+
+.reviewCardWrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-5);
+}
+
+.reviewCardWrap :global(article) {
+  border-bottom: none;
+}
+
+.finalCta {
+  background: var(--bg-ink);
+  color: var(--text-on-ink);
+  text-align: center;
+  padding-block: var(--space-9);
+}
+
+.finalCtaTitle {
+  color: var(--text-on-ink);
+  margin-bottom: var(--space-6);
+}
+
+/* Hero becomes two columns only when there is genuinely room for both. */
+@media (min-width: 900px) {
+  .heroInner {
+    grid-template-columns: 1.15fr 0.85fr;
+    padding-block: var(--space-9);
+  }
+  .heroFrame {
+    max-width: 30rem;
+    margin-left: auto;
+  }
+  .heroVisual {
+    display: block;
+  }
+}
+
+@media (max-width: 1024px) {
+  .benefitsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .benefitsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .heroInner {
+    padding-block: var(--space-8);
+  }
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  .categoryTile {
+    min-height: 220px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .categoryTile,
+  .categoryTileImg {
+    transition: none;
+  }
+  .categoryTile:hover {
+    transform: none;
+  }
+  .categoryTile:hover .categoryTileImg {
+    transform: none;
+  }
+}

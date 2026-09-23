@@ -1,0 +1,72 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+
+.sidebarWrap {
+  display: flex;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.topbarTitle {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.menuBtn {
+  display: none;
+  font-size: 1.25rem;
+}
+
+.page {
+  flex: 1;
+  padding: var(--space-6);
+}
+
+.overlay {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .sidebarWrap {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+  }
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 13, 13, 0.5);
+    z-index: 190;
+  }
+  .menuBtn {
+    display: block;
+  }
+  .page {
+    padding: var(--space-4);
+  }
+}

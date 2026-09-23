@@ -1,0 +1,339 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Three fixed zones — logo, nav, actions — separated by one consistent
+   48px (--space-8) gap. Only the nav's own trailing auto-margin absorbs
+   leftover space (pinning actions to the far right); logo and actions
+   never shrink, so the brand lockup and the nav can never collide. */
+.bar {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/* ---- Wordmark lockup ---------------------------------------------------
+   Retains the existing Playfair "GEN-Z" identity; the hyphen carries the
+   maroon accent and a small descriptor line gives it the proportions of a
+   real retail lockup rather than a single word of body text. */
+.logo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-height: 44px;
+  flex-shrink: 0;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.logoMark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.5625rem;
+  letter-spacing: 0.18em;
+  line-height: 1;
+}
+
+.logoAccent {
+  color: var(--brand);
+}
+
+.logoTagline {
+  font-family: var(--font-body);
+  font-size: 0.5rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* flex-shrink: 0 + nowrap keep every link at its natural width; the group
+   never gets squeezed against the logo. margin-right: auto is the single
+   place leftover space collects, pinning .actions to the far right. */
+.desktopNav {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: var(--space-6);
+  margin-right: auto;
+}
+
+/* Uppercase, finely tracked navigation — the convention for fashion retail.
+   Each link fills the full header height so its underline can sit exactly on
+   the header's bottom edge rather than hugging the text. */
+.link {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  height: var(--header-height);
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  position: relative;
+  transition: color var(--transition-fast);
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+  opacity: 0;
+}
+
+.link:hover {
+  color: var(--text-primary);
+}
+
+.link:hover::after {
+  transform: scaleX(1);
+  opacity: 0.35;
+}
+
+.linkActive {
+  color: var(--text-primary);
+}
+
+.linkActive::after,
+.linkActive:hover::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* Category-link placeholder — same flex slot as a real link (inherits
+   .desktopNav's gap/align-items), width set per-slot from
+   CATEGORY_SKELETON_WIDTHS in Navbar.jsx so the row's total width already
+   matches the real links before they arrive. */
+.linkSkeleton {
+  display: inline-block;
+  height: 0.625rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-muted);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+/* 44px minimum touch area (WCAG 2.5.5) achieved with padding, so the icons
+   stay visually the same size as before. */
+.iconBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--text-primary);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: var(--bg-muted);
+  color: var(--brand);
+}
+
+.accountName {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  display: none;
+}
+
+.cartBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 1.5px solid var(--bg-surface);
+}
+
+/* Hamburger: 44x44 hit area, 20x14 glyph centred inside it. */
+.hamburger {
+  display: none;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  margin-left: calc(var(--space-2) * -1);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.hamburger:hover {
+  background: var(--bg-muted);
+}
+
+.hamburger span,
+.hamburger::before,
+.hamburger::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: var(--text-primary);
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.hamburger::before {
+  top: 15px;
+}
+.hamburger span {
+  top: 21px;
+}
+.hamburger::after {
+  top: 27px;
+}
+
+.hamburger:has(.hamburgerOpen)::before {
+  transform: translateY(6px) rotate(45deg);
+}
+.hamburger:has(.hamburgerOpen)::after {
+  transform: translateY(-6px) rotate(-45deg);
+}
+.hamburgerOpen {
+  opacity: 0;
+}
+
+.searchPanel {
+  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-4) 0;
+  background: var(--bg-surface);
+  animation: drop-in var(--transition-base);
+}
+
+.mobileNav {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-5) var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  animation: drop-in var(--transition-base);
+  max-height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+}
+
+/* The drawer rows must not inherit the desktop links' full-header height. */
+.mobileNav .link {
+  display: block;
+  height: auto;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+}
+
+.mobileNav .link::after {
+  display: none;
+}
+
+.mobileNav .linkActive {
+  color: var(--brand);
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .searchPanel,
+  .mobileNav,
+  .linkSkeleton {
+    animation: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  /* The full-width lockup + 7-link nav + action icons need ~1020-1150px of
+     breathing room to sit at their natural (nowrap) width without crowding.
+     Below that, hand off to the hamburger drawer rather than let the desktop
+     nav visually compress against the logo. */
+  /* Three-column grid keeps the wordmark optically centred regardless of how
+     many action icons are present. */
+  /* Hamburger · wordmark · actions. The lockup is left-aligned rather than
+     centred: at 375px a centred wordmark would collide with the action
+     icons, and dropping an icon to make room would cost functionality. */
+  .bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-2);
+  }
+  .desktopNav {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+    justify-self: start;
+  }
+  .logo {
+    justify-self: start;
+    padding-left: var(--space-1);
+  }
+  .actions {
+    justify-self: end;
+  }
+}
+
+@media (max-width: 480px) {
+  .logoMark {
+    font-size: 1.375rem;
+  }
+  .logoTagline {
+    font-size: 0.5rem;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* Reveal only once the container has hit --container-max (1280px): past that
+   point extra viewport width buys no more room inside the header, so this is
+   the first breakpoint that reliably has slack to spare. */
+@media (min-width: 1280px) {
+  .accountName {
+    display: inline;
+  }
+}

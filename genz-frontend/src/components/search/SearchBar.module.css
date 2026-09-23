@@ -1,0 +1,32 @@
+.form {
+  display: flex;
+  gap: var(--space-2);
+  max-width: 560px;
+}
+
+.input {
+  flex: 1;
+  height: 46px;
+  padding: 0 var(--space-4);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+}
+
+.input:focus {
+  border-color: var(--brand);
+}
+
+.submit {
+  height: 46px;
+  padding: 0 var(--space-5);
+  background: var(--bg-ink);
+  color: var(--text-on-ink);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+.submit:hover {
+  background: var(--brand);
+}

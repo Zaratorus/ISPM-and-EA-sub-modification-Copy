@@ -1,0 +1,106 @@
+/**
+ * theme.css — Gen-Z design tokens.
+ * Premium menswear brand palette: maroon/burgundy as the primary accent,
+ * black for headings/navigation/premium sections, white for cards and
+ * clean space, warm neutrals for breathing room. Used sparingly — most of
+ * the interface stays black/white/neutral, maroon marks what matters.
+ */
+
+:root {
+  /* Brand — maroon / burgundy */
+  --color-maroon-900: #3c0b13;
+  --color-maroon-800: #4a0e17;
+  --color-maroon-700: #641220;
+  --color-maroon-600: #7f172a;
+  --color-maroon-500: #9c1f34;
+  --color-maroon-400: #b8354b;
+  --color-maroon-100: #f6e6e9;
+
+  /* Ink / black */
+  --color-ink-900: #0d0d0d;
+  --color-ink-800: #171717;
+  --color-ink-700: #262624;
+  --color-ink-500: #4a4642;
+
+  /* Neutrals */
+  --color-white: #ffffff;
+  --color-cream: #faf6f3;
+  --color-sand-100: #f4efeb;
+  --color-sand-200: #e9e1da;
+  --color-sand-400: #c9beb4;
+  --color-sand-600: #8f8479;
+  /* Same sand family, darkened so secondary text clears WCAG AA (4.5:1) on
+     the cream page background; sand-600 measured only 3.40:1. */
+  --color-sand-700: #6b6157;
+
+  /* Semantic */
+  --color-success: #2e7d45;
+  --color-success-bg: #eaf5ee;
+  --color-error: #c23b2c;
+  --color-error-bg: #fbeae7;
+  --color-warning: #b3781e;
+  --color-warning-bg: #faf1e1;
+  --color-info-bg: #eef2f6;
+
+  /* Role tokens */
+  --brand: var(--color-maroon-700);
+  --brand-hover: var(--color-maroon-600);
+  --brand-active: var(--color-maroon-800);
+  --brand-contrast: var(--color-white);
+  --brand-soft: var(--color-maroon-100);
+
+  --bg-page: var(--color-cream);
+  --bg-surface: var(--color-white);
+  --bg-muted: var(--color-sand-100);
+  --bg-ink: var(--color-ink-900);
+
+  --text-primary: var(--color-ink-900);
+  --text-secondary: var(--color-ink-500);
+  --text-muted: var(--color-sand-700);
+  --text-on-ink: var(--color-white);
+  --text-on-brand: var(--color-white);
+
+  --border-subtle: var(--color-sand-200);
+  --border-default: var(--color-sand-400);
+
+  /* Typography */
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+  --fs-3xl: 3rem;
+  --fs-4xl: 3.75rem;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 4rem;
+  --space-10: 6rem;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(13, 13, 13, 0.06);
+  --shadow-md: 0 6px 20px rgba(13, 13, 13, 0.08);
+  --shadow-lg: 0 16px 40px rgba(13, 13, 13, 0.14);
+
+  --container-max: 1280px;
+  --transition-fast: 150ms ease;
+  --transition-base: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  --header-height: 76px;
+}

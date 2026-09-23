@@ -1,0 +1,74 @@
+.hero {
+  background: var(--bg-ink);
+  color: var(--text-on-ink);
+  padding-block: var(--space-9);
+}
+
+.hero h1 {
+  color: var(--text-on-ink);
+  font-size: clamp(2rem, 5vw, var(--fs-3xl));
+}
+
+.eyebrow {
+  font-size: var(--fs-sm);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-maroon-400);
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+}
+
+.lead {
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 60ch;
+  font-size: var(--fs-md);
+}
+
+.section {
+  padding-block: var(--space-9);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+}
+
+.grid h2 {
+  font-size: var(--fs-lg);
+}
+
+.contactCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-7);
+  max-width: 480px;
+}
+
+.contactCard h2 {
+  font-size: var(--fs-lg);
+  margin-bottom: var(--space-3);
+}
+
+.fallback {
+  color: var(--text-muted);
+}
+
+.cta {
+  background: var(--color-maroon-800);
+  color: var(--text-on-ink);
+  text-align: center;
+  padding-block: var(--space-8);
+}
+
+.cta h2 {
+  color: var(--text-on-ink);
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

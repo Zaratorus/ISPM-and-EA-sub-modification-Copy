@@ -1,0 +1,21 @@
+/* Matches the treatment the product details page already used, so adding
+   breadcrumbs elsewhere introduces no second style. */
+.breadcrumb {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-5);
+  letter-spacing: 0.02em;
+}
+
+.breadcrumb a {
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.breadcrumb a:hover {
+  color: var(--brand);
+}
+
+.sep {
+  color: var(--text-muted);
+}

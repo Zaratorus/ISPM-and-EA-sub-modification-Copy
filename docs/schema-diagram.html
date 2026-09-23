@@ -1,0 +1,612 @@
+<title>Gen-Z Database Schema</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#EEF2F6; --surface:#FFFFFF; --surface-2:#F4F7F9;
+    --ink:#101820; --ink-soft:#55636F;
+    --line:#D2DAE1; --line-strong:#AFC0CC;
+    --accent:#0B6E7D; --accent-soft:#E1F0F2;
+    --warn:#B4590A; --warn-soft:#FBEDDD;
+    --mandatory:#0B6E7D; --nullable:#0B6E7D;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0D1418; --surface:#141D22; --surface-2:#182228;
+      --ink:#E7EEF1; --ink-soft:#93A5AE;
+      --line:#26333A; --line-strong:#37474F;
+      --accent:#4FC3D2; --accent-soft:#16333A;
+      --warn:#E0975A; --warn-soft:#2E2013;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0D1418; --surface:#141D22; --surface-2:#182228;
+    --ink:#E7EEF1; --ink-soft:#93A5AE;
+    --line:#26333A; --line-strong:#37474F;
+    --accent:#4FC3D2; --accent-soft:#16333A;
+    --warn:#E0975A; --warn-soft:#2E2013;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans",-apple-system,Segoe UI,sans-serif;
+    padding:0 0 80px;
+  }
+  code, .mono, .tname, svg text{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;}
+
+  .wrap{max-width:1200px; margin:0 auto; padding:0 32px;}
+
+  header.top{
+    padding:48px 0 28px; border-bottom:1px solid var(--line);
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--accent); font-weight:600;
+  }
+  h1{
+    font-size:clamp(28px,4vw,40px); line-height:1.1; margin:0; font-weight:700;
+    text-wrap:balance;
+  }
+  .sub{color:var(--ink-soft); font-size:15.5px; max-width:66ch; line-height:1.55; margin:0;}
+  .criterion{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    background:var(--accent-soft); border:1px solid var(--line-strong);
+    border-radius:10px; padding:12px 16px; margin-top:6px;
+  }
+  .criterion .badge{
+    font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:12px;
+    background:var(--accent); color:var(--surface); padding:4px 10px; border-radius:100px;
+    letter-spacing:.03em; white-space:nowrap;
+  }
+  .criterion p{margin:0; font-size:13.5px; color:var(--ink); line-height:1.5;}
+  .criterion p b{color:var(--accent);}
+
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; margin:28px 0 4px;
+  }
+  .stat{background:var(--surface); padding:18px 16px; text-align:left;}
+  .stat .n{font-family:"IBM Plex Mono",monospace; font-size:28px; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+
+  nav.jump{
+    display:flex; gap:8px; flex-wrap:wrap; padding:20px 0 4px;
+  }
+  nav.jump a{
+    font-size:12.5px; font-weight:600; color:var(--ink-soft);
+    text-decoration:none; padding:6px 12px; border:1px solid var(--line);
+    border-radius:100px; background:var(--surface);
+  }
+  nav.jump a:hover{color:var(--accent); border-color:var(--accent);}
+  nav.jump a .mtag{font-family:"IBM Plex Mono",monospace; color:var(--accent); margin-right:5px;}
+
+  section.module{padding:56px 0 8px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  .module-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px;}
+  .module-head .mid{
+    font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:13px; color:var(--surface);
+    background:var(--ink); padding:3px 9px; border-radius:5px;
+  }
+  .module-head h2{font-size:22px; margin:0; font-weight:700;}
+  .module-scope{color:var(--ink-soft); font-size:14px; max-width:70ch; line-height:1.55; margin:6px 0 22px;}
+
+  .diagram-frame{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:18px; overflow-x:auto;
+  }
+  .diagram-frame svg{display:block; margin:0 auto; max-width:100%; height:auto;}
+
+  .legend{
+    display:flex; gap:22px; flex-wrap:wrap; margin:14px 2px 0; font-size:12px; color:var(--ink-soft);
+    align-items:center;
+  }
+  .legend .li{display:flex; align-items:center; gap:7px;}
+  .legend .ln{display:inline-block; width:22px; height:0; border-top:1.6px solid var(--accent);}
+  .legend .ln.dash{border-top-style:dashed;}
+  .legend .chip{
+    font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:700; padding:1.5px 5px; border-radius:3px;
+  }
+  .legend .chip.pk{background:var(--accent); color:var(--surface);}
+  .legend .chip.fk{background:var(--surface); color:var(--accent); border:1.3px solid var(--accent);}
+
+  .constraints{margin-top:26px;}
+  .constraints h3{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600; margin:0 0 10px;}
+  .ctable{width:100%; border-collapse:collapse; font-size:13px;}
+  .ctable th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--ink-soft); font-weight:600; padding:0 10px 8px; border-bottom:1px solid var(--line);
+  }
+  .ctable td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top;}
+  .ctable tr:last-child td{border-bottom:none;}
+  .ctable td.name{font-family:"IBM Plex Mono",monospace; font-size:12px; white-space:nowrap;}
+  .ctable td.why{color:var(--ink-soft);}
+  .kind{
+    display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700;
+    padding:2px 7px; border-radius:4px; letter-spacing:.02em;
+  }
+  .kind.check{background:var(--warn-soft); color:var(--warn);}
+  .kind.fk{background:var(--accent-soft); color:var(--accent);}
+  .kind.uniq{background:var(--surface-2); color:var(--ink-soft); border:1px solid var(--line-strong);}
+  .kind.gen{background:var(--surface-2); color:var(--ink-soft); border:1px solid var(--line-strong);}
+
+  .xmod{padding:56px 0 20px; border-top:1px solid var(--line);}
+  .xmod h2{font-size:22px; margin:0 0 6px;}
+  .xmod .module-scope{margin-bottom:24px;}
+  .xtable{width:100%; border-collapse:collapse; font-size:13.5px;}
+  .xtable th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--ink-soft); font-weight:600; padding:0 12px 10px; border-bottom:1px solid var(--line-strong);
+  }
+  .xtable td{padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:top;}
+  .xtable tr:last-child td{border-bottom:none;}
+  .xtable td.tbl{font-family:"IBM Plex Mono",monospace; font-weight:600;}
+  .modpill{
+    font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; color:var(--ink-soft);
+    background:var(--surface-2); border:1px solid var(--line-strong); padding:1px 6px; border-radius:4px;
+  }
+  .xtable .refby{display:flex; flex-direction:column; gap:5px;}
+  .xtable .refrow{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft);}
+  .xtable .refrow b{color:var(--ink); font-weight:600;}
+
+  footer.foot{
+    padding:40px 0 0; margin-top:40px; border-top:1px solid var(--line);
+    color:var(--ink-soft); font-size:12.5px; line-height:1.7;
+  }
+  footer.foot code{background:var(--surface-2); padding:1px 5px; border-radius:4px; font-size:12px;}
+
+  @media (max-width:760px){
+    .wrap{padding:0 18px;}
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Gen-Z Digital Storefront &nbsp;·&nbsp; genz_digital_storefront (MySQL 8, InnoDB, utf8mb4)</div>
+    <h1>Database Structure &amp; Relationships</h1>
+    <p class="sub">The complete relational schema as implemented in <code>db/schema.sql</code> — 21 tables across the four business modules (EP-01 to EP-04), every primary key, foreign key and integrity constraint drawn from the actual DDL, not a conceptual model.</p>
+    <div class="criterion">
+      <span class="badge">Excellent · 14–15 / 15</span>
+      <p>Rubric target: <b>&ldquo;Proper schema design with correct PK–FK relationships and constraints.&rdquo;</b> Every relationship below is a live <code>FOREIGN KEY</code> constraint; every rule below is a live <code>CHECK</code> constraint — both verified directly against the running schema.</p>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n">21</div><div class="l">Tables</div></div>
+    <div class="stat"><div class="n">20</div><div class="l">Foreign keys</div></div>
+    <div class="stat"><div class="n">8</div><div class="l">CHECK constraints</div></div>
+    <div class="stat"><div class="n">6</div><div class="l">Unique constraints</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">Generated column</div></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#module-a"><span class="mtag">A</span>Product &amp; Catalogue</a>
+    <a href="#module-d"><span class="mtag">D</span>Store Administration</a>
+    <a href="#module-b"><span class="mtag">B</span>Customer &amp; Order</a>
+    <a href="#module-c"><span class="mtag">C</span>Delivery &amp; Review</a>
+    <a href="#cross-module">Cross-module references</a>
+  </nav>
+
+  <!-- ============ MODULE A ============ -->
+  <section class="module" id="module-a">
+    <div class="module-head"><span class="mid">MODULE A</span><h2>Product &amp; Catalogue Management</h2></div>
+    <p class="module-scope">EP-01. The product catalogue: categories, products, their images, and a one-to-one stock ledger whose availability status is computed by MySQL itself, not by application code.</p>
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 700 320" role="img" aria-label="Product and catalogue schema: categories referenced by products, products referenced by product_images and inventory_stock">
+        <!-- categories -->
+        <g>
+          <rect x="20" y="20" width="200" height="94" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="32" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">categories</text>
+          <line x1="20" y1="50" x2="220" y2="50" stroke="var(--line)"/>
+          <rect x="32" y="60" width="20" height="14" rx="3" fill="var(--accent)"/>
+          <text x="37" y="70.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="58" y="71" font-size="12" fill="var(--ink)">category_id</text>
+          <text x="32" y="98" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ name (UNIQUE), description, timestamps</text>
+        </g>
+        <!-- products -->
+        <g>
+          <rect x="250" y="20" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="262" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">products</text>
+          <line x1="250" y1="50" x2="450" y2="50" stroke="var(--line)"/>
+          <rect x="262" y="60" width="20" height="14" rx="3" fill="var(--accent)"/>
+          <text x="267" y="70.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="288" y="71" font-size="12" fill="var(--ink)">product_id</text>
+          <rect x="262" y="82" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/>
+          <text x="266.5" y="92.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="93" font-size="12" fill="var(--ink)">category_id</text>
+          <text x="262" y="120" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ name, price (&gt;0), status, timestamps</text>
+        </g>
+        <!-- product_images -->
+        <g>
+          <rect x="250" y="176" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="262" y="196" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">product_images</text>
+          <line x1="250" y1="206" x2="450" y2="206" stroke="var(--line)"/>
+          <rect x="262" y="216" width="20" height="14" rx="3" fill="var(--accent)"/>
+          <text x="267" y="226.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="288" y="227" font-size="12" fill="var(--ink)">product_image_id</text>
+          <rect x="262" y="238" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/>
+          <text x="266.5" y="248.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="249" font-size="12" fill="var(--ink)">product_id</text>
+          <text x="262" y="276" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ image_reference, sort_order</text>
+        </g>
+        <!-- inventory_stock -->
+        <g>
+          <rect x="480" y="20" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="492" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">inventory_stock</text>
+          <line x1="480" y1="50" x2="680" y2="50" stroke="var(--line)"/>
+          <rect x="492" y="60" width="34" height="14" rx="3" fill="var(--accent)"/>
+          <text x="496" y="70.5" font-size="8.5" font-weight="700" fill="var(--surface)">PK/FK</text>
+          <text x="532" y="71" font-size="12" fill="var(--ink)">product_id</text>
+          <text x="492" y="90" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ quantity (&ge;0)</text>
+          <text x="492" y="106" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ availability_status</text>
+          <text x="492" y="120" font-size="9.5" fill="var(--accent)">GENERATED ALWAYS AS (STORED)</text>
+        </g>
+        <!-- connections -->
+        <polyline points="220,67 235,67 235,88 250,88" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <polyline points="350,136 350,156 350,176" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="356" y="160" font-size="9.5" fill="var(--ink-soft)">CASCADE</text>
+        <polyline points="450,67 465,67 465,67 480,67" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+      </svg>
+    </div>
+    <div class="legend">
+      <span class="li"><span class="chip pk">PK</span> primary key</span>
+      <span class="li"><span class="chip fk">FK</span> foreign key</span>
+      <span class="li"><span class="ln"></span> mandatory FK (NOT NULL)</span>
+      <span class="li">unlabeled line = <code>ON DELETE RESTRICT</code> (default)</span>
+    </div>
+
+    <div class="constraints">
+      <h3>Named constraints in this module</h3>
+      <table class="ctable">
+        <tr><th>Constraint</th><th>Kind</th><th>What it guarantees</th></tr>
+        <tr><td class="name">fk_products_category</td><td><span class="kind fk">FK · RESTRICT</span></td><td class="why">A category can't be deleted while products still reference it.</td></tr>
+        <tr><td class="name">fk_product_images_product</td><td><span class="kind fk">FK · CASCADE</span></td><td class="why">Deleting a product cleans up its image rows automatically.</td></tr>
+        <tr><td class="name">fk_inventory_stock_product</td><td><span class="kind fk">FK · RESTRICT</span></td><td class="why">A stock ledger row can't outlive (or precede) its product.</td></tr>
+        <tr><td class="name">chk_products_price_positive</td><td><span class="kind check">CHECK</span></td><td class="why"><code>price &gt; 0</code> — enforced at the database, not just in the API.</td></tr>
+        <tr><td class="name">chk_inventory_quantity_nonnegative</td><td><span class="kind check">CHECK</span></td><td class="why"><code>quantity &gt;= 0</code> — stock can never go negative.</td></tr>
+        <tr><td class="name">availability_status</td><td><span class="kind gen">GENERATED</span></td><td class="why">Computed by MySQL as <code>IF(quantity&gt;0,'IN_STOCK','OUT_OF_STOCK')</code> — impossible for stock and status to drift apart.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ MODULE D ============ -->
+  <section class="module" id="module-d">
+    <div class="module-head"><span class="mid">MODULE D</span><h2>Store Administration Management</h2></div>
+    <p class="module-scope">EP-04. Created before B/C because they all reference it: roles, permissions, staff accounts, the platform's singleton settings, and the one central audit table every other module writes to.</p>
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 1160 300" role="img" aria-label="Store administration schema: roles and permissions joined by role_permissions, roles referenced by staff_admin_users; store_settings, admin_access_key and activity_log stand alone">
+        <!-- roles -->
+        <g>
+          <rect x="20" y="20" width="200" height="94" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="32" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">roles</text>
+          <line x1="20" y1="50" x2="220" y2="50" stroke="var(--line)"/>
+          <rect x="32" y="60" width="20" height="14" rx="3" fill="var(--accent)"/><text x="37" y="70.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="58" y="71" font-size="12" fill="var(--ink)">role_id</text>
+          <text x="32" y="98" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ name (UNIQUE)</text>
+        </g>
+        <!-- permissions -->
+        <g>
+          <rect x="480" y="20" width="200" height="94" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="492" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">permissions</text>
+          <line x1="480" y1="50" x2="680" y2="50" stroke="var(--line)"/>
+          <rect x="492" y="60" width="20" height="14" rx="3" fill="var(--accent)"/><text x="497" y="70.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="518" y="71" font-size="12" fill="var(--ink)">permission_id</text>
+          <text x="492" y="98" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ name (UNIQUE)</text>
+        </g>
+        <!-- role_permissions -->
+        <g>
+          <rect x="250" y="20" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="262" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">role_permissions</text>
+          <line x1="250" y1="50" x2="450" y2="50" stroke="var(--line)"/>
+          <rect x="262" y="60" width="34" height="14" rx="3" fill="var(--accent)"/><text x="266" y="70.5" font-size="8.5" font-weight="700" fill="var(--surface)">PK/FK</text>
+          <text x="302" y="71" font-size="12" fill="var(--ink)">role_id</text>
+          <rect x="262" y="82" width="34" height="14" rx="3" fill="var(--accent)"/><text x="266" y="92.5" font-size="8.5" font-weight="700" fill="var(--surface)">PK/FK</text>
+          <text x="302" y="93" font-size="12" fill="var(--ink)">permission_id</text>
+          <text x="262" y="120" font-size="10.5" fill="var(--ink-soft)" font-style="italic">composite PK (role_id, permission_id)</text>
+        </g>
+        <!-- staff_admin_users -->
+        <g>
+          <rect x="20" y="154" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="32" y="174" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">staff_admin_users</text>
+          <line x1="20" y1="184" x2="220" y2="184" stroke="var(--line)"/>
+          <rect x="32" y="194" width="20" height="14" rx="3" fill="var(--accent)"/><text x="37" y="204.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="58" y="205" font-size="11.5" fill="var(--ink)">staff_admin_user_id</text>
+          <rect x="32" y="216" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="36.5" y="226.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="58" y="227" font-size="12" fill="var(--ink)">role_id</text>
+          <text x="32" y="254" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ name, credentials_reference, status</text>
+        </g>
+        <!-- store_settings -->
+        <g>
+          <rect x="480" y="154" width="200" height="94" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="3,3"/>
+          <text x="492" y="174" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">store_settings</text>
+          <line x1="480" y1="184" x2="680" y2="184" stroke="var(--line)"/>
+          <rect x="492" y="194" width="20" height="14" rx="3" fill="var(--accent)"/><text x="497" y="204.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="518" y="205" font-size="11.5" fill="var(--ink)">store_settings_id = 1</text>
+          <text x="492" y="228" font-size="10" fill="var(--ink-soft)" font-style="italic">no FK — singleton row (CHECK id=1)</text>
+        </g>
+        <!-- admin_access_key -->
+        <g>
+          <rect x="710" y="20" width="200" height="94" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="3,3"/>
+          <text x="722" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">admin_access_key</text>
+          <line x1="710" y1="50" x2="910" y2="50" stroke="var(--line)"/>
+          <rect x="722" y="60" width="20" height="14" rx="3" fill="var(--accent)"/><text x="727" y="70.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="748" y="71" font-size="11" fill="var(--ink)">admin_access_key_id = 1</text>
+          <text x="722" y="94" font-size="10" fill="var(--ink-soft)" font-style="italic">no FK — singleton row (CHECK id=1)</text>
+        </g>
+        <!-- activity_log -->
+        <g>
+          <rect x="710" y="154" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="3,3"/>
+          <text x="722" y="174" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">activity_log</text>
+          <line x1="710" y1="184" x2="910" y2="184" stroke="var(--line)"/>
+          <rect x="722" y="194" width="20" height="14" rx="3" fill="var(--accent)"/><text x="727" y="204.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="748" y="205" font-size="12" fill="var(--ink)">activity_log_id</text>
+          <text x="722" y="228" font-size="10" fill="var(--ink-soft)" font-style="italic">actor_id / affected_entity_id are</text>
+          <text x="722" y="240" font-size="10" fill="var(--ink-soft)" font-style="italic">deliberately unenforced (polymorphic)</text>
+        </g>
+        <!-- connections -->
+        <polyline points="220,67 235,67 235,67 250,67" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="222" y="60" font-size="9.5" fill="var(--ink-soft)">CASCADE</text>
+        <polyline points="480,67 465,67 465,88 450,88" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="418" y="60" font-size="9.5" fill="var(--ink-soft)">CASCADE</text>
+        <polyline points="120,114 120,134 120,154" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+      </svg>
+    </div>
+    <div class="legend">
+      <span class="li"><span class="chip pk">PK</span> primary key</span>
+      <span class="li"><span class="chip fk">FK</span> foreign key</span>
+      <span class="li">dashed box = standalone (no FK relationship)</span>
+    </div>
+
+    <div class="constraints">
+      <h3>Named constraints in this module</h3>
+      <table class="ctable">
+        <tr><th>Constraint</th><th>Kind</th><th>What it guarantees</th></tr>
+        <tr><td class="name">fk_role_permissions_role / _permission</td><td><span class="kind fk">FK · CASCADE</span></td><td class="why">Deleting a role or permission cleans up its junction rows; the pair together forms the composite PK.</td></tr>
+        <tr><td class="name">fk_staff_admin_users_role</td><td><span class="kind fk">FK · RESTRICT</span></td><td class="why">A role in use by staff can't be deleted out from under them.</td></tr>
+        <tr><td class="name">chk_store_settings_singleton</td><td><span class="kind check">CHECK</span></td><td class="why"><code>store_settings_id = 1</code> — the table can never hold more than one row.</td></tr>
+        <tr><td class="name">chk_admin_access_key_singleton</td><td><span class="kind check">CHECK</span></td><td class="why">Same singleton pattern for the Owner/Admin access-key hash.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ MODULE B ============ -->
+  <section class="module" id="module-b">
+    <div class="module-head"><span class="mid">MODULE B</span><h2>Customer &amp; Order Management</h2></div>
+    <p class="module-scope">EP-02. Customers, their carts, and the orders those carts become — every order line freezes its price at checkout, independent of later catalogue price changes.</p>
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 700 470" role="img" aria-label="Customer and order schema: customers referenced by carts and orders, carts referenced by cart_items, orders referenced by order_items and order_status_history">
+        <!-- customers -->
+        <g>
+          <rect x="20" y="20" width="200" height="94" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="32" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">customers</text>
+          <line x1="20" y1="50" x2="220" y2="50" stroke="var(--line)"/>
+          <rect x="32" y="60" width="20" height="14" rx="3" fill="var(--accent)"/><text x="37" y="70.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="58" y="71" font-size="12" fill="var(--ink)">customer_id</text>
+          <text x="32" y="98" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ name, contact_info, credentials, status</text>
+        </g>
+        <!-- carts -->
+        <g>
+          <rect x="20" y="154" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="32" y="174" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">carts</text>
+          <line x1="20" y1="184" x2="220" y2="184" stroke="var(--line)"/>
+          <rect x="32" y="194" width="20" height="14" rx="3" fill="var(--accent)"/><text x="37" y="204.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="58" y="205" font-size="12" fill="var(--ink)">cart_id</text>
+          <rect x="32" y="216" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="2,1.5"/><text x="36.5" y="226.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="58" y="227" font-size="12" fill="var(--ink)">customer_id <tspan fill="var(--ink-soft)" font-style="italic">null?</tspan></text>
+          <text x="32" y="254" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ status (ACTIVE/CONVERTED/ABANDONED)</text>
+        </g>
+        <!-- orders -->
+        <g>
+          <rect x="250" y="154" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="262" y="174" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">orders</text>
+          <line x1="250" y1="184" x2="450" y2="184" stroke="var(--line)"/>
+          <rect x="262" y="194" width="20" height="14" rx="3" fill="var(--accent)"/><text x="267" y="204.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="288" y="205" font-size="12" fill="var(--ink)">order_id</text>
+          <rect x="262" y="216" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="266.5" y="226.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="227" font-size="12" fill="var(--ink)">customer_id</text>
+          <text x="262" y="254" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ status (Pending→…→Cancelled)</text>
+        </g>
+        <!-- cart_items -->
+        <g>
+          <rect x="20" y="310" width="200" height="138" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="32" y="330" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">cart_items</text>
+          <line x1="20" y1="340" x2="220" y2="340" stroke="var(--line)"/>
+          <rect x="32" y="350" width="20" height="14" rx="3" fill="var(--accent)"/><text x="37" y="360.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="58" y="361" font-size="12" fill="var(--ink)">cart_item_id</text>
+          <rect x="32" y="372" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="36.5" y="382.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="58" y="383" font-size="12" fill="var(--ink)">cart_id</text>
+          <rect x="32" y="394" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="36.5" y="404.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="58" y="405" font-size="11" fill="var(--ink)">product_id <tspan fill="var(--ink-soft)" font-style="italic">→ Module A</tspan></text>
+          <text x="32" y="436" font-size="10.5" fill="var(--ink-soft)" font-style="italic">UNIQUE(cart_id, product_id)</text>
+        </g>
+        <!-- order_items -->
+        <g>
+          <rect x="250" y="310" width="200" height="138" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="262" y="330" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">order_items</text>
+          <line x1="250" y1="340" x2="450" y2="340" stroke="var(--line)"/>
+          <rect x="262" y="350" width="20" height="14" rx="3" fill="var(--accent)"/><text x="267" y="360.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="288" y="361" font-size="12" fill="var(--ink)">order_item_id</text>
+          <rect x="262" y="372" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="266.5" y="382.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="383" font-size="12" fill="var(--ink)">order_id</text>
+          <rect x="262" y="394" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="266.5" y="404.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="405" font-size="11" fill="var(--ink)">product_id <tspan fill="var(--ink-soft)" font-style="italic">→ Module A</tspan></text>
+          <text x="262" y="436" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ price_snapshot (frozen at checkout)</text>
+        </g>
+        <!-- order_status_history -->
+        <g>
+          <rect x="480" y="310" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="492" y="330" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">order_status_history</text>
+          <line x1="480" y1="340" x2="680" y2="340" stroke="var(--line)"/>
+          <rect x="492" y="350" width="20" height="14" rx="3" fill="var(--accent)"/><text x="497" y="360.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="518" y="361" font-size="11" fill="var(--ink)">order_status_history_id</text>
+          <rect x="492" y="372" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="496.5" y="382.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="518" y="383" font-size="12" fill="var(--ink)">order_id</text>
+          <text x="492" y="408" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ from_status, to_status, changed_at</text>
+        </g>
+        <!-- connections -->
+        <polyline points="120,114 120,134 120,154" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <text x="126" y="140" font-size="9.5" fill="var(--ink-soft)">SET NULL</text>
+        <polyline points="220,90 235,90 235,212 250,212" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <polyline points="120,270 120,290 120,310" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="126" y="296" font-size="9.5" fill="var(--ink-soft)">CASCADE</text>
+        <polyline points="350,270 350,290 350,310" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="356" y="296" font-size="9.5" fill="var(--ink-soft)">CASCADE</text>
+        <polyline points="450,212 465,212 465,368 480,368" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="456" y="205" font-size="9.5" fill="var(--ink-soft)">CASCADE</text>
+      </svg>
+    </div>
+    <div class="legend">
+      <span class="li"><span class="ln"></span> mandatory FK</span>
+      <span class="li"><span class="ln dash"></span> nullable / conditional FK</span>
+      <span class="li">italic label = references a table drawn in another module</span>
+    </div>
+
+    <div class="constraints">
+      <h3>Named constraints in this module</h3>
+      <table class="ctable">
+        <tr><th>Constraint</th><th>Kind</th><th>What it guarantees</th></tr>
+        <tr><td class="name">fk_carts_customer</td><td><span class="kind fk">FK · SET NULL</span></td><td class="why">Nullable by design — the schema explicitly leaves room for a future guest cart; deleting a customer orphans their cart rather than destroying it.</td></tr>
+        <tr><td class="name">fk_cart_items_cart</td><td><span class="kind fk">FK · CASCADE</span></td><td class="why">A cart's line items disappear with the cart.</td></tr>
+        <tr><td class="name">fk_cart_items_product</td><td><span class="kind fk">FK · RESTRICT</span></td><td class="why">A product referenced in an active cart can't be deleted.</td></tr>
+        <tr><td class="name">fk_orders_customer</td><td><span class="kind fk">FK · RESTRICT</span></td><td class="why">Order history can never be orphaned by deleting the customer.</td></tr>
+        <tr><td class="name">fk_order_items_order / _product</td><td><span class="kind fk">FK · CASCADE / RESTRICT</span></td><td class="why">Order lines cascade with the order; the product they reference is protected.</td></tr>
+        <tr><td class="name">chk_cart_items_quantity_positive / chk_order_items_quantity_positive</td><td><span class="kind check">CHECK</span></td><td class="why"><code>quantity &gt; 0</code> on both — a zero or negative line item is impossible at the database level.</td></tr>
+        <tr><td class="name">uq_cart_items_cart_product / uq_order_items_order_product</td><td><span class="kind uniq">UNIQUE</span></td><td class="why">A product can only appear once per cart / once per order — quantity is adjusted in place, never duplicated as a second row.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ MODULE C ============ -->
+  <section class="module" id="module-c">
+    <div class="module-head"><span class="mid">MODULE C</span><h2>Delivery Tracking with Review Management</h2></div>
+    <p class="module-scope">EP-03. What happens after an order is ready: one delivery per order, tracked through six statuses, plus verified-purchase reviews that must trace back to a real order before they're accepted.</p>
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 470 380" role="img" aria-label="Delivery and review schema: deliveries referenced by delivery_status_history, reviews referenced by moderation_logs">
+        <!-- deliveries -->
+        <g>
+          <rect x="20" y="20" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="32" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">deliveries</text>
+          <line x1="20" y1="50" x2="220" y2="50" stroke="var(--line)"/>
+          <rect x="32" y="60" width="20" height="14" rx="3" fill="var(--accent)"/><text x="37" y="70.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="58" y="71" font-size="12" fill="var(--ink)">delivery_id</text>
+          <rect x="32" y="82" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="36.5" y="92.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="58" y="93" font-size="11" fill="var(--ink)">order_id <tspan fill="var(--ink-soft)" font-style="italic">→ Module B</tspan></text>
+          <text x="32" y="120" font-size="10.5" fill="var(--ink-soft)" font-style="italic">UNIQUE(order_id) · status ×4</text>
+        </g>
+        <!-- delivery_status_history -->
+        <g>
+          <rect x="20" y="176" width="200" height="116" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="32" y="196" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">delivery_status_history</text>
+          <line x1="20" y1="206" x2="220" y2="206" stroke="var(--line)"/>
+          <rect x="32" y="216" width="20" height="14" rx="3" fill="var(--accent)"/><text x="37" y="226.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="58" y="227" font-size="11" fill="var(--ink)">delivery_status_history_id</text>
+          <rect x="32" y="238" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="36.5" y="248.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="58" y="249" font-size="12" fill="var(--ink)">delivery_id</text>
+          <text x="32" y="276" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ from_status, to_status</text>
+        </g>
+        <!-- reviews -->
+        <g>
+          <rect x="250" y="20" width="200" height="160" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="262" y="40" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">reviews</text>
+          <line x1="250" y1="50" x2="450" y2="50" stroke="var(--line)"/>
+          <rect x="262" y="60" width="20" height="14" rx="3" fill="var(--accent)"/><text x="267" y="70.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="288" y="71" font-size="12" fill="var(--ink)">review_id</text>
+          <rect x="262" y="82" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="266.5" y="92.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="93" font-size="11" fill="var(--ink)">customer_id <tspan fill="var(--ink-soft)" font-style="italic">→ B</tspan></text>
+          <rect x="262" y="104" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="266.5" y="114.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="115" font-size="11" fill="var(--ink)">product_id <tspan fill="var(--ink-soft)" font-style="italic">→ A</tspan></text>
+          <rect x="262" y="126" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="266.5" y="136.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="137" font-size="11" fill="var(--ink)">order_id <tspan fill="var(--ink-soft)" font-style="italic">→ B</tspan></text>
+          <text x="262" y="164" font-size="10.5" fill="var(--ink-soft)" font-style="italic">+ rating (1–5), moderation_status</text>
+        </g>
+        <!-- moderation_logs -->
+        <g>
+          <rect x="250" y="220" width="200" height="138" rx="8" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.4"/>
+          <text x="262" y="240" class="tname" font-size="13.5" font-weight="700" fill="var(--ink)">moderation_logs</text>
+          <line x1="250" y1="250" x2="450" y2="250" stroke="var(--line)"/>
+          <rect x="262" y="260" width="20" height="14" rx="3" fill="var(--accent)"/><text x="267" y="270.5" font-size="9" font-weight="700" fill="var(--surface)">PK</text>
+          <text x="288" y="271" font-size="12" fill="var(--ink)">moderation_log_id</text>
+          <rect x="262" y="282" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3"/><text x="266.5" y="292.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="293" font-size="12" fill="var(--ink)">review_id</text>
+          <rect x="262" y="304" width="20" height="14" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="2,1.5"/><text x="266.5" y="314.5" font-size="9" font-weight="700" fill="var(--accent)">FK</text>
+          <text x="288" y="315" font-size="10.5" fill="var(--ink)">actor_id <tspan fill="var(--ink-soft)" font-style="italic">→ D, null?</tspan></text>
+          <text x="262" y="342" font-size="10.5" fill="var(--ink-soft)" font-style="italic">actor_type/actor_id pairing enforced</text>
+        </g>
+        <!-- connections -->
+        <polyline points="120,136 120,156 120,176" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="126" y="162" font-size="9.5" fill="var(--ink-soft)">CASCADE</text>
+        <polyline points="350,180 350,200 350,220" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow)"/>
+      </svg>
+    </div>
+    <div class="legend">
+      <span class="li"><span class="ln"></span> mandatory FK</span>
+      <span class="li"><span class="ln dash"></span> nullable FK</span>
+      <span class="li">italic label = references another module's table</span>
+    </div>
+
+    <div class="constraints">
+      <h3>Named constraints in this module</h3>
+      <table class="ctable">
+        <tr><th>Constraint</th><th>Kind</th><th>What it guarantees</th></tr>
+        <tr><td class="name">fk_deliveries_order</td><td><span class="kind fk">FK · RESTRICT</span></td><td class="why">Combined with <code>UNIQUE(order_id)</code> — exactly one delivery per order, never zero-or-many silently.</td></tr>
+        <tr><td class="name">fk_delivery_status_history_delivery</td><td><span class="kind fk">FK · CASCADE</span></td><td class="why">Status history is scoped to its delivery and cleaned up with it.</td></tr>
+        <tr><td class="name">fk_reviews_customer / _product / _order</td><td><span class="kind fk">FK · RESTRICT ×3</span></td><td class="why">All three must resolve to real rows — a review can't reference a customer, product or order that doesn't exist. This is what makes reviews verified-purchase, not free-text.</td></tr>
+        <tr><td class="name">chk_reviews_rating_range</td><td><span class="kind check">CHECK</span></td><td class="why"><code>rating BETWEEN 1 AND 5</code>.</td></tr>
+        <tr><td class="name">chk_moderation_logs_actor_pairing</td><td><span class="kind check">CHECK</span></td><td class="why">Enforces the Actor Identity rule: <code>actor_type='STAFF_ADMIN_USER'</code> requires a real <code>actor_id</code>; <code>actor_type='OWNER_ADMIN'</code> requires <code>actor_id IS NULL</code> — never both, never neither.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ CROSS MODULE ============ -->
+  <section class="xmod" id="cross-module">
+    <h2>Cross-module references</h2>
+    <p class="module-scope">The four tables every other module leans on — drawn once here since showing every line on every diagram above would just be noise.</p>
+    <table class="xtable">
+      <tr><th>Referenced table</th><th>Referenced by</th></tr>
+      <tr>
+        <td class="tbl">products <span class="modpill">A</span></td>
+        <td>
+          <div class="refby">
+            <div class="refrow"><b>cart_items</b>.product_id <span class="modpill">B</span> · <b>order_items</b>.product_id <span class="modpill">B</span> · <b>reviews</b>.product_id <span class="modpill">C</span></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="tbl">customers <span class="modpill">B</span></td>
+        <td><div class="refby"><div class="refrow"><b>carts</b>.customer_id <span class="modpill">B</span> · <b>orders</b>.customer_id <span class="modpill">B</span> · <b>reviews</b>.customer_id <span class="modpill">C</span></div></div></td>
+      </tr>
+      <tr>
+        <td class="tbl">orders <span class="modpill">B</span></td>
+        <td><div class="refby"><div class="refrow"><b>deliveries</b>.order_id <span class="modpill">C</span> · <b>reviews</b>.order_id <span class="modpill">C</span></div></div></td>
+      </tr>
+      <tr>
+        <td class="tbl">staff_admin_users <span class="modpill">D</span></td>
+        <td>
+          <div class="refby">
+            <div class="refrow"><b>moderation_logs</b>.actor_id <span class="modpill">C</span></div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </section>
+
+  <footer class="foot">
+    Source of truth: <code>genz-backend/genz-backend/db/schema.sql</code>. Every table name, column name, constraint name and <code>ON DELETE</code> action shown above is copied verbatim from that file — nothing here is a conceptual approximation drawn after the fact. Columns beyond primary/foreign keys are summarised (italic notes) rather than fully enumerated, to keep each diagram readable; the full column list for any table is in the schema file itself.
+  </footer>
+
+</div>

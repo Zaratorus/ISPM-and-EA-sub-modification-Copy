@@ -1,0 +1,23 @@
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--bg-muted);
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, var(--color-ink-800), var(--color-maroon-800));
+}
+
+.placeholder span {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 8cqw, 4rem);
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 700;
+}

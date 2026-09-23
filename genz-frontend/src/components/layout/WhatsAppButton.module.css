@@ -1,0 +1,71 @@
+/* z-index sits below the shop filter sheet (200/201) so the sheet and its
+   backdrop still cover this button on mobile. */
+.fab {
+  position: fixed;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  z-index: 90;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #25d366;
+  color: var(--color-white);
+  box-shadow: 0 10px 30px rgba(37, 211, 102, 0.28);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 34px rgba(37, 211, 102, 0.36);
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, 0.3);
+  animation: whatsapp-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes whatsapp-ping {
+  75%,
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .fab {
+    width: 52px;
+    height: 52px;
+    right: var(--space-4);
+    bottom: var(--space-4);
+  }
+  .icon {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halo {
+    animation: none;
+  }
+  .fab {
+    transition: none;
+  }
+  .fab:hover {
+    transform: none;
+  }
+}

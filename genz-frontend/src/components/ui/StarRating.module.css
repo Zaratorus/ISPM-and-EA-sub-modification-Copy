@@ -1,0 +1,35 @@
+.row {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.lg {
+  font-size: 1.6rem;
+}
+.sm {
+  font-size: 0.85rem;
+}
+
+.filled {
+  color: var(--brand);
+}
+
+.empty {
+  color: var(--border-default);
+}
+
+.interactive .filled,
+.interactive .empty {
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.interactive button {
+  padding: 2px;
+}
+
+.interactive button:hover {
+  transform: scale(1.15);
+  color: var(--brand);
+}

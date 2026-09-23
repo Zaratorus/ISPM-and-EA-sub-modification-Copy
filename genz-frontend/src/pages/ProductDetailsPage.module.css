@@ -1,0 +1,200 @@
+.page {
+  padding-block: var(--space-6) var(--space-10);
+}
+
+.breadcrumb {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.breadcrumb a:hover {
+  color: var(--brand);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--space-8);
+  margin-bottom: var(--space-9);
+}
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mainImage {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-muted);
+}
+
+.thumbRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.thumb {
+  width: 64px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 2px solid var(--border-subtle);
+  opacity: 0.75;
+  transition: opacity var(--transition-fast), border-color var(--transition-fast);
+}
+
+.thumb:hover {
+  opacity: 1;
+}
+
+.thumbActive {
+  border-color: var(--brand);
+  opacity: 1;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.title {
+  font-size: clamp(1.75rem, 3vw, var(--fs-2xl));
+  line-height: 1.15;
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.price {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  color: var(--brand);
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+}
+
+.availability {
+  margin-bottom: var(--space-4);
+}
+
+.description {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+  line-height: 1.7;
+}
+
+/* A hairline above the purchase controls separates "what this is" from
+   "how you buy it" without adding another boxed card to the page. */
+.buyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 340px;
+  padding-top: var(--space-5);
+  margin-bottom: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.buyNow {
+  width: 100%;
+  max-width: 340px;
+}
+
+.loginHint {
+  margin-top: var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.loginHint a {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.reviewsSection,
+.relatedSection {
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-9);
+}
+
+.reviewsSection h2,
+.relatedSection h2 {
+  font-size: var(--fs-xl);
+  margin-bottom: var(--space-5);
+}
+
+.reviewForm {
+  background: var(--bg-muted);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  margin-bottom: var(--space-7);
+  max-width: 540px;
+}
+
+.reviewFormLabel {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.reviewForm textarea {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.eligibilityNote {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  background: var(--bg-muted);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  max-width: 540px;
+}
+
+.noReviews {
+  color: var(--text-muted);
+}
+
+.reviewList {
+  max-width: 720px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+}
+
+@media (max-width: 640px) {
+  /* Full-width purchase controls: easier to hit, and the natural shape on
+     a phone. */
+  .buyRow,
+  .buyNow {
+    max-width: none;
+  }
+  .buyRow > button,
+  .buyRow > a {
+    flex: 1 1 auto;
+  }
+  .mainImage {
+    aspect-ratio: 1 / 1;
+  }
+}

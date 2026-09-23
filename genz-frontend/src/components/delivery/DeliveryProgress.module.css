@@ -1,0 +1,63 @@
+.progress {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.stage {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.stageDot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-muted);
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  line-height: 1;
+  color: transparent;
+  margin-top: 1px;
+}
+
+.stageText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stageDone {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.stageDone .stageDot {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--text-on-brand);
+}
+
+.stageCurrent {
+  color: var(--brand);
+}
+
+.stageCurrent .stageDot {
+  box-shadow: 0 0 0 4px var(--brand-soft);
+}
+
+.stageTime {
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}

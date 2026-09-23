@@ -1,0 +1,59 @@
+.page {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--space-9);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-7);
+}
+
+.card h1 {
+  font-size: var(--fs-xl);
+  margin-bottom: var(--space-2);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+}
+
+.submit {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  font-size: var(--fs-sm);
+}
+
+.forgotRow a {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.forgotRow a:hover {
+  text-decoration: underline;
+}
+
+.switchLink {
+  margin: var(--space-6) 0 0;
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.switchLink a {
+  color: var(--brand);
+  font-weight: 600;
+}

@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "genz-frontend",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "genz-frontend/node_modules/vite/bin/vite.js",
+        "genz-frontend",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "genz-backend",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "process.chdir('genz-backend/genz-backend');require(require('path').resolve('server.js'))"
+      ],
+      "port": 4000
+    }
+  ]
+}
