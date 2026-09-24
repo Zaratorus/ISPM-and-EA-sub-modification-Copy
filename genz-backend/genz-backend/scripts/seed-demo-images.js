@@ -22,15 +22,7 @@ async function api(method, path, body, token) {
   return data;
 }
 
-const IMAGES = {
-  "Classic Oxford Shirt": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&h=800&fit=crop",
-  "Everyday Crew Tee": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop",
-  "Slim Fit Chinos": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&h=800&fit=crop",
-  "Boys' Graphic Tee": "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=800&fit=crop",
-  "Boys' School Trousers": "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=800&h=800&fit=crop",
-  "Gen-Z Signature EDP 100ml": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&h=800&fit=crop",
-  "Midnight Noir Cologne 50ml": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800&h=800&fit=crop",
-};
+const IMAGES = {};
 
 async function main() {
   const login = await api("POST", "/admin/access-key/validate", { accessKey: ACCESS_KEY });

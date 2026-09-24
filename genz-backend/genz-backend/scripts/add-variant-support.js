@@ -13,14 +13,10 @@
 require('dotenv').config();
 const { pool } = require('../src/shared/db/connection');
 
-// A few demo out-of-stock chips so the disabled/crossed-out state is
-// actually visible without needing an admin UI to manage it (none exists
-// yet — see product.service.js's outOfStockVariants comment).
-const OUT_OF_STOCK_BY_PRODUCT_NAME = {
-  'Classic Oxford Shirt': ['S', 'XXL'],
-  'Slim Fit Chinos': ['XL'],
-  "Boys' Graphic Tee": ['5-6Y'],
-};
+// Maps a product name to the chip labels that should be marked out of
+// stock for it — populate as needed via an admin UI or a one-off script
+// run; none exists yet (see product.service.js's outOfStockVariants comment).
+const OUT_OF_STOCK_BY_PRODUCT_NAME = {};
 
 async function columnExists(table, column) {
   const [rows] = await pool.query(

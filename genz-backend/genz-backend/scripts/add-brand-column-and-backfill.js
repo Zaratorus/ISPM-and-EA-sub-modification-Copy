@@ -11,15 +11,7 @@
 require('dotenv').config();
 const { pool } = require('../src/shared/db/connection');
 
-const BRAND_BY_PRODUCT_NAME = {
-  'Classic Oxford Shirt': 'Polo',
-  'Everyday Crew Tee': 'Calvin Klein',
-  'Slim Fit Chinos': "Levi's",
-  "Boys' Graphic Tee": 'H&M',
-  "Boys' School Trousers": 'Crocodile',
-  'Gen-Z Signature EDP 100ml': 'Park Avenue',
-  'Midnight Noir Cologne 50ml': 'Wild Stone',
-};
+const BRAND_BY_PRODUCT_NAME = {};
 
 async function columnExists(table, column) {
   const [rows] = await pool.query(
