@@ -4,6 +4,7 @@ import { searchProducts } from "../api/products";
 import { getProductReviews } from "../api/reviews";
 import { useCategories } from "../hooks/useCategories";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { CLOTHING_BRANDS, FRAGRANCE_BRANDS } from "../config/brands";
 import ProductGrid from "../components/product/ProductGrid";
 import ReviewCard from "../components/product/ReviewCard";
 import Button from "../components/ui/Button";
@@ -78,7 +79,7 @@ export default function HomePage() {
       <section className={styles.hero}>
         <div className={`${styles.heroInner} container`}>
           <div className={styles.heroContent}>
-            <p className={styles.eyebrow}>Men&rsquo;s &amp; Boys&rsquo; Fashion — Est. Gen-Z</p>
+            <p className={styles.eyebrow}>Men&rsquo;s &amp; Kids&rsquo; Fashion — Est. Gen-Z</p>
             <h1 className={styles.heroTitle}>
               GEN-Z
               <span>Define Your Style.</span>
@@ -131,6 +132,33 @@ export default function HomePage() {
           </div>
         </section>
       ) : null}
+
+      {/* Shop by Brand */}
+      <section className={`${styles.section} container`}>
+        <h2 className={styles.sectionTitle}>Shop by Brand</h2>
+
+        <div className={styles.brandGroup}>
+          <p className={styles.brandGroupLabel}>Clothing Brands</p>
+          <div className={styles.brandRow}>
+            {CLOTHING_BRANDS.map((brand) => (
+              <Link key={brand} to={`/shop?brand=${encodeURIComponent(brand)}`} className={styles.brandCard}>
+                {brand}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.brandGroup}>
+          <p className={styles.brandGroupLabel}>Fragrance Brands</p>
+          <div className={styles.brandRow}>
+            {FRAGRANCE_BRANDS.map((brand) => (
+              <Link key={brand} to={`/shop?brand=${encodeURIComponent(brand)}`} className={styles.brandCard}>
+                {brand}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Featured products */}
       <section className={`${styles.section} container`}>

@@ -6,15 +6,28 @@
   border-bottom: 1px solid var(--border-subtle);
 }
 
-/* Three fixed zones — logo, nav, actions — separated by one consistent
-   48px (--space-8) gap. Only the nav's own trailing auto-margin absorbs
-   leftover space (pinning actions to the far right); logo and actions
-   never shrink, so the brand lockup and the nav can never collide. */
+/* Three-zone grid — logo | nav | actions — spanning the bar's full width.
+   The outer columns are minmax(0, 1fr): an explicit 0 floor (overriding
+   the implicit content-based minimum a plain "1fr" track gets) so the two
+   outer columns ALWAYS split the bar's leftover width exactly evenly, no
+   matter how the logo's width compares to the actions' — that's what
+   pins the nav column to true dead-center instead of merely "centered in
+   whatever space happens to be left over". Logo and actions sit flush
+   against their column's outer edge (justify-self), which is itself flush
+   against the container's own edge padding — no extra margin stacked on
+   top of it, and no gap between logo and nav beyond the deliberate
+   column-gap. min-height (not height) + vertical padding: if any zone's
+   natural content ever needs more than --header-height (larger text-size
+   preference, a longer localized label, etc.) the bar grows instead of
+   letting content overflow past the header's own bottom border. */
 .bar {
-  height: var(--header-height);
-  display: flex;
+  width: 100%;
+  min-height: var(--header-height);
+  padding-block: var(--space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-8);
+  column-gap: var(--space-5);
 }
 
 /* ---- Wordmark lockup ---------------------------------------------------
@@ -25,6 +38,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  justify-self: start;
   gap: 3px;
   min-height: 44px;
   flex-shrink: 0;
@@ -54,28 +68,30 @@
   white-space: nowrap;
 }
 
-/* flex-shrink: 0 + nowrap keep every link at its natural width; the group
-   never gets squeezed against the logo. margin-right: auto is the single
-   place leftover space collects, pinning .actions to the far right. */
+/* flex-shrink: 0 + nowrap keep every link at its natural width. The group
+   sits in the bar's own centered (auto-width) grid column, so it's exactly
+   centered in the header regardless of how wide the logo or actions are. */
 .desktopNav {
   display: flex;
   align-items: center;
+  justify-self: center;
   flex-wrap: nowrap;
   flex-shrink: 0;
   gap: var(--space-6);
-  margin-right: auto;
 }
 
 /* Uppercase, finely tracked navigation — the convention for fashion retail.
-   Each link fills the full header height so its underline can sit exactly on
-   the header's bottom edge rather than hugging the text. */
+   Each link stretches to the bar's actual (rendered) height — via
+   align-self, not a hardcoded --header-height copy — so its underline
+   always sits exactly on the header's bottom edge, even if the bar ever
+   grows past --header-height, instead of overflowing past it. */
 .link {
   font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-secondary);
-  height: var(--header-height);
+  align-self: stretch;
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
@@ -141,6 +157,7 @@
 .actions {
   display: flex;
   align-items: center;
+  justify-self: end;
   flex-shrink: 0;
   gap: var(--space-2);
 }
@@ -237,52 +254,167 @@
   opacity: 0;
 }
 
-.searchPanel {
-  border-top: 1px solid var(--border-subtle);
-  padding: var(--space-4) 0;
-  background: var(--bg-surface);
-  animation: drop-in var(--transition-base);
+/* ---- Mobile drawer ------------------------------------------------------
+   A true off-canvas overlay — fixed backdrop + a panel that slides in from
+   the right edge — rather than a dropdown competing with page content for
+   height. Mirrors SearchOverlay's dialog contract (backdrop-click,
+   Escape, body scroll lock all wired in Navbar.jsx) so the two overlays
+   behave identically. */
+.mobileOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
 }
 
-.mobileNav {
+.mobileBackdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: none;
+  padding: 0;
+  cursor: default;
+  background: rgba(13, 13, 13, 0.6);
+  animation: fade-in var(--transition-base);
+}
+
+.mobileDrawer {
+  position: relative;
+  margin-left: auto;
+  width: min(85vw, 380px);
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: var(--space-2) var(--space-5) var(--space-5);
-  border-top: 1px solid var(--border-subtle);
   background: var(--bg-surface);
-  animation: drop-in var(--transition-base);
-  max-height: calc(100vh - var(--header-height));
+  box-shadow: var(--shadow-lg);
   overflow-y: auto;
+  padding: var(--space-5);
+  animation: slide-in-right var(--transition-base);
 }
 
-/* The drawer rows must not inherit the desktop links' full-header height. */
-.mobileNav .link {
-  display: block;
-  height: auto;
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--border-subtle);
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
+.mobileTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
 }
 
-.mobileNav .link::after {
-  display: none;
+.mobileKicker {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.mobileNav .linkActive {
+/* Explicit in-drawer close "X", in addition to the header hamburger (which
+   morphs into an X and still toggles) — the backdrop sits above the
+   hamburger while the drawer is open, so this is the reachable close
+   affordance. 44px hit area (WCAG 2.5.5). */
+.mobileClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.mobileClose:hover {
+  background: var(--bg-muted);
   color: var(--brand);
 }
 
-@keyframes drop-in {
+.mobileLinks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Each row is a minimum 44px touch target (WCAG 2.5.5) with its own
+   padding, not just line-height, so it holds even if font settings
+   change — plus a divider for a clear tap boundary between rows. */
+.mobileLinks .link {
+  display: flex;
+  align-items: center;
+  height: auto;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+}
+
+.mobileLinks .link::after {
+  display: none;
+}
+
+.mobileLinks .linkActive {
+  color: var(--brand);
+}
+
+.mobileDivider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--space-5) 0;
+}
+
+.mobileUtilities {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mobileUtilityLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: background-color var(--transition-fast);
+}
+
+.mobileUtilityLink:hover {
+  background: var(--bg-muted);
+}
+
+.mobileCartBadge {
+  margin-left: auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(-6px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .searchPanel,
-  .mobileNav,
+  .mobileBackdrop,
+  .mobileDrawer,
   .linkSkeleton {
     animation: none;
   }

@@ -30,7 +30,7 @@ async function createCart(customerId) {
 
 async function findItemsByCartId(cartId) {
   const [rows] = await pool.query(
-    'SELECT cart_item_id, cart_id, product_id, quantity FROM cart_items WHERE cart_id = ? ORDER BY cart_item_id ASC',
+    'SELECT cart_item_id, cart_id, product_id, variant_label, quantity FROM cart_items WHERE cart_id = ? ORDER BY cart_item_id ASC',
     [cartId]
   );
   return rows;
@@ -38,7 +38,7 @@ async function findItemsByCartId(cartId) {
 
 async function findItemById(cartItemId) {
   const [rows] = await pool.query(
-    'SELECT cart_item_id, cart_id, product_id, quantity FROM cart_items WHERE cart_item_id = ?',
+    'SELECT cart_item_id, cart_id, product_id, variant_label, quantity FROM cart_items WHERE cart_item_id = ?',
     [cartItemId]
   );
   return rows[0] || null;
@@ -46,18 +46,22 @@ async function findItemById(cartItemId) {
 
 /**
  * Upserts a line item: increments quantity if a row already exists for
- * (cartId, productId), else inserts a new row. One atomic statement — no
- * read-then-write race. Logical Database Design V1.1, Section B3: "a Cart
- * should not have two separate line items for the same Product; quantities
- * should accumulate on one row instead" (enforced physically by
- * cart_items' UNIQUE (cart_id, product_id) constraint).
+ * (cartId, productId, variantLabel), else inserts a new row. One atomic
+ * statement — no read-then-write race. Logical Database Design V1.1,
+ * Section B3: "a Cart should not have two separate line items for the same
+ * Product; quantities should accumulate on one row instead" — now scoped
+ * per size/age too (different sizes of the same product are legitimately
+ * different lines), enforced by cart_items' UNIQUE (cart_id, product_id,
+ * variant_label) constraint. variantLabel defaults to '' for products with
+ * no size/age selector, preserving the original one-row-per-product rule
+ * for everything that isn't sized.
  */
-async function addOrIncrementItem(cartId, productId, quantity) {
+async function addOrIncrementItem(cartId, productId, variantLabel, quantity) {
   await pool.query(
-    `INSERT INTO cart_items (cart_id, product_id, quantity)
-     VALUES (?, ?, ?)
+    `INSERT INTO cart_items (cart_id, product_id, variant_label, quantity)
+     VALUES (?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)`,
-    [cartId, productId, quantity]
+    [cartId, productId, variantLabel ?? '', quantity]
   );
 }
 

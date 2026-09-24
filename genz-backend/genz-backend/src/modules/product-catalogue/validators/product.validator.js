@@ -4,6 +4,8 @@ const searchProductsSchema = {
   query: z.object({
     categoryId: z.coerce.number().int().positive().optional(),
     name: z.string().trim().min(1).max(150).optional(),
+    brand: z.string().trim().min(1).max(100).optional(),
+    variant: z.string().trim().min(1).max(20).optional(),
     minPrice: z.coerce.number().positive().optional(),
     maxPrice: z.coerce.number().positive().optional(),
     page: z.coerce.number().int().positive().default(1),
@@ -23,6 +25,7 @@ const createProductSchema = {
     name: z.string().trim().min(1).max(150),
     description: z.string().trim().max(5000).optional(),
     price: z.coerce.number().positive(),
+    brand: z.string().trim().min(1).max(100).optional(),
   }),
 };
 
@@ -33,6 +36,7 @@ const updateProductSchema = {
     name: z.string().trim().min(1).max(150).optional(),
     description: z.string().trim().max(5000).optional(),
     price: z.coerce.number().positive().optional(),
+    brand: z.string().trim().min(1).max(100).optional(),
   }),
 };
 

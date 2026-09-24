@@ -12,7 +12,7 @@ export default function AboutPage() {
           <p className={styles.eyebrow}>Our Story</p>
           <h1>About Gen-Z</h1>
           <p className={styles.lead}>
-            Gen-Z is a men&rsquo;s and boys&rsquo; fashion destination built around sharp, wearable style and a
+            Gen-Z is a men&rsquo;s and kids&rsquo; fashion destination built around sharp, wearable style and a
             curated fragrance edit — for a generation that dresses with intention.
           </p>
         </div>

@@ -35,7 +35,7 @@ async function main() {
 
   const categories = [
     { name: "Men's Clothing", description: "Shirts, tees, and everyday menswear." },
-    { name: "Boys' Clothing", description: "Clothing for boys, casual and school-ready." },
+    { name: "Kids' Clothing", description: "Clothing for kids, ages 5 to 15, casual and school-ready." },
     { name: "Perfumes", description: "Signature fragrances for men and boys." },
   ];
   const catIds = {};
@@ -47,13 +47,13 @@ async function main() {
   }
 
   const products = [
-    { name: "Classic Oxford Shirt", category: "Men's Clothing", description: "Crisp cotton oxford shirt, tailored fit.", price: 4500, stock: 25 },
-    { name: "Everyday Crew Tee", category: "Men's Clothing", description: "Soft cotton crew-neck t-shirt.", price: 1800, stock: 60 },
-    { name: "Slim Fit Chinos", category: "Men's Clothing", description: "Stretch cotton chinos, slim fit.", price: 5200, stock: 18 },
-    { name: "Boys' Graphic Tee", category: "Boys' Clothing", description: "Printed cotton t-shirt for boys.", price: 1200, stock: 40 },
-    { name: "Boys' School Trousers", category: "Boys' Clothing", description: "Durable school-uniform trousers.", price: 2200, stock: 0 },
-    { name: "Gen-Z Signature EDP 100ml", category: "Perfumes", description: "Long-lasting eau de parfum, signature scent.", price: 8900, stock: 12 },
-    { name: "Midnight Noir Cologne 50ml", category: "Perfumes", description: "Woody, spicy evening fragrance.", price: 6200, stock: 15 },
+    { name: "Classic Oxford Shirt", category: "Men's Clothing", brand: "Polo", description: "Crisp cotton oxford shirt, tailored fit.", price: 4500, stock: 25 },
+    { name: "Everyday Crew Tee", category: "Men's Clothing", brand: "Calvin Klein", description: "Soft cotton crew-neck t-shirt.", price: 1800, stock: 60 },
+    { name: "Slim Fit Chinos", category: "Men's Clothing", brand: "Levi's", description: "Stretch cotton chinos, slim fit.", price: 5200, stock: 18 },
+    { name: "Boys' Graphic Tee", category: "Kids' Clothing", brand: "H&M", description: "Printed cotton t-shirt for boys.", price: 1200, stock: 40 },
+    { name: "Boys' School Trousers", category: "Kids' Clothing", brand: "Crocodile", description: "Durable school-uniform trousers.", price: 2200, stock: 0 },
+    { name: "Gen-Z Signature EDP 100ml", category: "Perfumes", brand: "Park Avenue", description: "Long-lasting eau de parfum, signature scent.", price: 8900, stock: 12 },
+    { name: "Midnight Noir Cologne 50ml", category: "Perfumes", brand: "Wild Stone", description: "Woody, spicy evening fragrance.", price: 6200, stock: 15 },
   ];
 
   for (const p of products) {
@@ -62,6 +62,7 @@ async function main() {
       name: p.name,
       description: p.description,
       price: p.price,
+      brand: p.brand,
     }, token);
     const prod = res.data || res;
     const productId = prod.productId || prod.product_id || prod.id;

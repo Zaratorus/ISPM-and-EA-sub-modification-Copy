@@ -216,6 +216,57 @@
   opacity: 0.9;
 }
 
+/* ---- Shop by Brand ----------------------------------------------------
+   Wordmark-style cards rather than image tiles (unlike Shop by Category):
+   there's no per-brand photography, and this reads closer to how a fashion
+   retailer's brand directory actually looks — flat, typographic, dense. */
+.brandGroup {
+  margin-bottom: var(--space-6);
+}
+
+.brandGroup:last-child {
+  margin-bottom: 0;
+}
+
+.brandGroupLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.brandRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.brandCard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.brandCard:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
 .perfumeSection {
   background: linear-gradient(120deg, var(--color-maroon-900), var(--color-ink-900));
   color: var(--text-on-ink);

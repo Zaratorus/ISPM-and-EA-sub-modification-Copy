@@ -1,5 +1,6 @@
 .card {
   display: block;
+  container-type: inline-size;
   background: var(--bg-surface);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -84,17 +85,48 @@
   min-height: 2.6em;
 }
 
+/* gap guarantees breathing room between price and button even when both
+   share a row — without it, space-between can let the gap collapse to 0
+   on narrow cards. flex-wrap lets the button drop to its own row (see the
+   container query below) instead of colliding with the price. */
 .footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
 }
 
+/* Currency strings ("LKR 4,500.00") render as one unbreakable run — the
+   Intl formatter joins the code and amount with a no-break space — so
+   there is no space to wrap at and no digit that's safe to truncate on a
+   storefront. min-width: 0 lets the flex item shrink below its default
+   content-based minimum; white-space: nowrap keeps the string intact
+   rather than letting it overflow its own box and visually spill under
+   the neighboring button. */
 .price {
+  min-width: 0;
+  flex: 1 1 auto;
+  white-space: nowrap;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-md);
   color: var(--brand);
+}
+
+/* Below ~190px of card width, "LKR 0,000.00" no longer fits next to the
+   38px circle on one line at the normal price size. Rather than shrink or
+   truncate the number, give the price its own full-width row and drop the
+   button to a second row, right-aligned — every digit stays fully
+   visible and the button never overlaps it. */
+@container (max-width: 190px) {
+  .price {
+    flex-basis: 100%;
+    font-size: var(--fs-sm);
+  }
+  .addBtn {
+    margin-left: auto;
+  }
 }
 
 /* The circle stays visually compact, but an invisible inset extends the

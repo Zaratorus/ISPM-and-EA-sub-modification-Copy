@@ -35,7 +35,7 @@ export default function Footer() {
         <div className={styles.brandCol}>
           <span className={styles.logo}>GEN-Z</span>
           <p className={styles.tagline}>
-            Modern men&rsquo;s fashion and signature fragrances — for boys and gents who define their own style.
+            Modern men&rsquo;s fashion and signature fragrances — for kids and gents who define their own style.
           </p>
         </div>
 

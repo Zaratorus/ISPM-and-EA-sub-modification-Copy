@@ -18,6 +18,11 @@ CREATE TABLE categories (
     category_id     BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name            VARCHAR(100) NOT NULL UNIQUE,
     description     VARCHAR(500) NULL,
+    -- Which fixed chip set (if any) PDP/the shop filter bar render for
+    -- products in this category — NONE for anything that isn't sized
+    -- (e.g. Perfumes). The label sets themselves are fixed constants
+    -- (shared/constants/variants.js), not stored per-category/product.
+    variant_type    ENUM('NONE','SIZE','AGE') NOT NULL DEFAULT 'NONE',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -28,6 +33,11 @@ CREATE TABLE products (
     name            VARCHAR(150) NOT NULL,
     description     TEXT NULL,
     price           DECIMAL(10,2) NOT NULL,
+    -- Free-text brand label (e.g. "Polo", "Wild Stone") — not a separate
+    -- Brand entity/table, since the catalogue has no other brand-owned data
+    -- (logo, description, etc.) to justify one. Nullable: existing products
+    -- predate this field and older/undecided items may simply have none.
+    brand           VARCHAR(100) NULL,
     status          ENUM('ACTIVE','DISCONTINUED') NOT NULL DEFAULT 'ACTIVE',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -36,7 +46,8 @@ CREATE TABLE products (
         FOREIGN KEY (category_id) REFERENCES categories(category_id)
         ON DELETE RESTRICT ON UPDATE RESTRICT,
     INDEX idx_products_category_status (category_id, status),
-    INDEX idx_products_name (name)
+    INDEX idx_products_name (name),
+    INDEX idx_products_brand (brand)
 ) ENGINE=InnoDB;
 
 CREATE TABLE product_images (
@@ -46,6 +57,19 @@ CREATE TABLE product_images (
     sort_order          SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_product_images_product
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
+        ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE=InnoDB;
+
+-- Deliberately NOT a full per-variant inventory ledger (no quantity column):
+-- the chip selector only needs to know which of the category's fixed
+-- labels are unavailable for a given product. Presence of a row means
+-- that label is out of stock; everything else is assumed available.
+CREATE TABLE product_out_of_stock_variants (
+    product_id      BIGINT UNSIGNED NOT NULL,
+    variant_label   VARCHAR(20) NOT NULL,
+    PRIMARY KEY (product_id, variant_label),
+    CONSTRAINT fk_oos_variants_product
         FOREIGN KEY (product_id) REFERENCES products(product_id)
         ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
@@ -184,6 +208,13 @@ CREATE TABLE cart_items (
     cart_id         BIGINT UNSIGNED NOT NULL,
     product_id      BIGINT UNSIGNED NOT NULL,
     quantity        INT UNSIGNED NOT NULL,
+    -- '' (not NULL) for products with no size/age selector (variant_type
+    -- NONE) — kept NOT NULL so the uniqueness rule below behaves
+    -- predictably: MySQL treats NULL as distinct-from-itself in a unique
+    -- key, which would silently defeat the "one row per product" rule for
+    -- every unsized product. '' collapses to the same row every time, same
+    -- as before this column existed.
+    variant_label   VARCHAR(20) NOT NULL DEFAULT '',
     CONSTRAINT chk_cart_items_quantity_positive CHECK (quantity > 0),
     CONSTRAINT fk_cart_items_cart
         FOREIGN KEY (cart_id) REFERENCES carts(cart_id)
@@ -191,7 +222,9 @@ CREATE TABLE cart_items (
     CONSTRAINT fk_cart_items_product
         FOREIGN KEY (product_id) REFERENCES products(product_id)
         ON DELETE RESTRICT ON UPDATE RESTRICT,
-    UNIQUE KEY uq_cart_items_cart_product (cart_id, product_id)
+    -- Different sizes of the same product are now separate lines; same
+    -- product + same size (or both unsized) still accumulates onto one row.
+    UNIQUE KEY uq_cart_items_cart_product_variant (cart_id, product_id, variant_label)
 ) ENGINE=InnoDB;
 
 CREATE TABLE orders (

@@ -1,0 +1,221 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: none;
+  padding: 0;
+  cursor: default;
+  background: rgba(13, 13, 13, 0.6);
+  animation: fade-in var(--transition-base);
+}
+
+/* Full-width panel dropping from the header edge — the standard high-end
+   retail "search curtain" — rather than a small inline dropdown. */
+.panel {
+  position: relative;
+  max-height: min(88vh, 720px);
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  padding-block: var(--space-6) var(--space-8);
+  animation: drop-in var(--transition-base);
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.kicker {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.closeBtn:hover {
+  background: var(--bg-muted);
+  color: var(--brand);
+}
+
+.searchForm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
+  border-bottom: 2px solid var(--border-default);
+  color: var(--text-muted);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  color: var(--text-primary);
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.categoryRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+}
+
+.categoryLabel {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-right: var(--space-1);
+}
+
+.categoryChip {
+  padding: var(--space-2) var(--space-4);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.categoryChip:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.resultsHeading {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-4);
+}
+
+.resultsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+.resultCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  text-align: left;
+}
+
+.resultImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--bg-muted);
+}
+
+.resultName {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.resultPrice {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  color: var(--brand);
+}
+
+.resultSkeleton {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-md);
+  background: var(--bg-muted);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.emptyState {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .panel,
+  .resultSkeleton {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .resultsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .searchInput {
+    font-size: var(--fs-lg);
+  }
+}

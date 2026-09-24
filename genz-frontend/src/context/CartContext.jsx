@@ -10,11 +10,11 @@ const CartContext = createContext(null);
 /**
  * Cart is customer-authenticated-only on the backend (no guest cart —
  * Backend/API Architecture Design V1.0, Section 15 item 2, resolved).
- * cart_items carries only { cartItemId, productId, quantity } — no price
- * or product name (Physical Schema V1.0: no price_snapshot on Cart Item,
- * unlike Order Item). This context enriches each line with the product's
- * current price/name/image/availability via GET /products/:id so the UI
- * can show a live subtotal, then re-derives it on every mutation.
+ * cart_items carries only { cartItemId, productId, variantLabel, quantity }
+ * — no price or product name (Physical Schema V1.0: no price_snapshot on
+ * Cart Item, unlike Order Item). This context enriches each line with the
+ * product's current price/name/image/availability via GET /products/:id so
+ * the UI can show a live subtotal, then re-derives it on every mutation.
  */
 export function CartProvider({ children }) {
   const { isAuthenticated } = useCustomerAuth();
@@ -67,9 +67,9 @@ export function CartProvider({ children }) {
   }, [refresh]);
 
   const addItem = useCallback(
-    async (productId, quantity = 1) => {
+    async (productId, quantity = 1, variantLabel) => {
       try {
-        const cart = await cartApi.addCartItem({ productId, quantity });
+        const cart = await cartApi.addCartItem({ productId, quantity, variantLabel });
         setCartId(cart.cartId);
         setItems(await enrich(cart.items));
         showToast("Added to cart.", "success");

@@ -21,11 +21,36 @@ const categoryRepository = require('../repositories/category.repository');
 const inventoryRepository = require('../repositories/inventory.repository');
 const ApiError = require('../../../shared/utils/ApiError');
 const activityLogService = require('../../store-administration/services/activity-log.service');
+const { variantTypeOfLabel } = require('../../../shared/constants/variants');
 
-async function searchProducts({ categoryId, name, minPrice, maxPrice, page = 1, limit = 20 }) {
-  const { rows, total } = await productRepository.search({ categoryId, name, minPrice, maxPrice, page, limit });
-  const imagesByProduct = await productRepository.findImagesByProductIds(rows.map((r) => r.product_id));
-  const data = rows.map((row) => ({ ...row, images: imagesByProduct.get(row.product_id) || [] }));
+async function searchProducts({ categoryId, name, brand, variant, minPrice, maxPrice, page = 1, limit = 20 }) {
+  const variantType = variant ? variantTypeOfLabel(variant) : null;
+  // An unrecognized `variant` value can't match anything real — short-circuit
+  // to an empty result instead of silently ignoring the filter.
+  if (variant && !variantType) {
+    return { data: [], meta: { page, limit, total: 0 } };
+  }
+  const { rows, total } = await productRepository.search({
+    categoryId,
+    name,
+    brand,
+    variant,
+    variantType,
+    minPrice,
+    maxPrice,
+    page,
+    limit,
+  });
+  const productIds = rows.map((r) => r.product_id);
+  const [imagesByProduct, outOfStockByProduct] = await Promise.all([
+    productRepository.findImagesByProductIds(productIds),
+    productRepository.findOutOfStockVariantsByProductIds(productIds),
+  ]);
+  const data = rows.map((row) => ({
+    ...row,
+    images: imagesByProduct.get(row.product_id) || [],
+    outOfStockVariants: outOfStockByProduct.get(row.product_id) || [],
+  }));
   return {
     data,
     meta: { page, limit, total },
@@ -37,16 +62,19 @@ async function getProductDetail(productId) {
   if (!product || product.status === 'DISCONTINUED') {
     throw ApiError.notFound('PRODUCT_NOT_FOUND', `Product ${productId} does not exist.`);
   }
-  const images = await productRepository.findImages(productId);
-  return { ...product, images };
+  const [images, outOfStockByProduct] = await Promise.all([
+    productRepository.findImages(productId),
+    productRepository.findOutOfStockVariantsByProductIds([productId]),
+  ]);
+  return { ...product, images, outOfStockVariants: outOfStockByProduct.get(Number(productId)) || [] };
 }
 
-async function createProduct({ categoryId, name, description, price }, actor) {
+async function createProduct({ categoryId, name, description, price, brand }, actor) {
   const category = await categoryRepository.findById(categoryId);
   if (!category) {
     throw ApiError.badRequest('CATEGORY_NOT_FOUND', `Category ${categoryId} does not exist.`);
   }
-  const product = await productRepository.create({ categoryId, name, description, price });
+  const product = await productRepository.create({ categoryId, name, description, price, brand });
 
   await activityLogService.logActivity({
     actorType: actor.actorType,
@@ -60,7 +88,7 @@ async function createProduct({ categoryId, name, description, price }, actor) {
   return product;
 }
 
-async function updateProduct(productId, { categoryId, name, description, price }, actor) {
+async function updateProduct(productId, { categoryId, name, description, price, brand }, actor) {
   const existing = await productRepository.findByIdIncludingDiscontinued(productId);
   if (!existing) {
     throw ApiError.notFound('PRODUCT_NOT_FOUND', `Product ${productId} does not exist.`);
@@ -76,6 +104,7 @@ async function updateProduct(productId, { categoryId, name, description, price }
     name: name ?? existing.name,
     description: description ?? existing.description,
     price: price ?? existing.price,
+    brand: brand ?? existing.brand,
   });
 
   await activityLogService.logActivity({

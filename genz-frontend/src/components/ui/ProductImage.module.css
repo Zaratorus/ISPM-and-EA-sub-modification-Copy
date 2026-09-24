@@ -2,6 +2,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Anchor the crop to the top of the source photo, not the center: product
+     shots are portrait-oriented (head/shoulders near the top), so a 3:4
+     center-crop trims into the subject's head. Top-anchoring keeps the
+     head/shoulders in frame and lets any excess get trimmed off the bottom
+     (garment hem/floor) instead. */
+  object-position: top center;
   background: var(--bg-muted);
 }
 

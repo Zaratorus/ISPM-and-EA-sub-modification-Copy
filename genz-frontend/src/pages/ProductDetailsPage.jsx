@@ -7,6 +7,7 @@ import { getDeliveryByOrder } from "../api/deliveries";
 import { formatCurrency } from "../utils/format";
 import { useCategories } from "../hooks/useCategories";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { labelsForVariantType } from "../config/variants";
 import { useCart } from "../context/CartContext";
 import { useCustomerAuth } from "../context/CustomerAuthContext";
 import { useToast } from "../context/ToastContext";
@@ -38,6 +39,8 @@ export default function ProductDetailsPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [adding, setAdding] = useState(false);
   const [related, setRelated] = useState([]);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [variantError, setVariantError] = useState(false);
 
   const [reviews, setReviews] = useState({ data: [], meta: null, loading: true });
   const [eligibleOrders, setEligibleOrders] = useState([]);
@@ -57,6 +60,8 @@ export default function ProductDetailsPage() {
 
   useEffect(() => {
     setActiveImage(0);
+    setSelectedVariant(null);
+    setVariantError(false);
   }, [id]);
 
   // Reviews (public — approved only)
@@ -134,8 +139,12 @@ export default function ProductDetailsPage() {
   }, [isAuthenticated, id]);
 
   async function handleAddToCart() {
+    if (variantLabels.length > 0 && !selectedVariant) {
+      setVariantError(true);
+      return false;
+    }
     setAdding(true);
-    const result = await addItem(product.product_id, quantity);
+    const result = await addItem(product.product_id, quantity, selectedVariant || undefined);
     setAdding(false);
     return result.ok;
   }
@@ -168,6 +177,10 @@ export default function ProductDetailsPage() {
   const inStock = product.availability_status !== "OUT_OF_STOCK";
   const category = categories.find((c) => c.categoryId === product.category_id);
   const images = product.images?.length ? product.images : [null];
+  const variantLabels = labelsForVariantType(category?.variantType);
+  const outOfStockVariants = new Set(product.outOfStockVariants || []);
+  const needsVariant = variantLabels.length > 0;
+  const canAddToCart = inStock && (!needsVariant || Boolean(selectedVariant));
 
   return (
     <div className={`${styles.page} container`}>
@@ -231,13 +244,49 @@ export default function ProductDetailsPage() {
 
           {product.description ? <p className={styles.description}>{product.description}</p> : null}
 
+          {needsVariant ? (
+            <div className={styles.variantSection}>
+              <p className={styles.variantLabel}>
+                {category?.variantType === "AGE" ? "Age" : "Size"} <span className={styles.required}>*</span>
+              </p>
+              <div className={styles.variantChips} role="group" aria-label={category?.variantType === "AGE" ? "Select age" : "Select size"}>
+                {variantLabels.map((label) => {
+                  const unavailable = outOfStockVariants.has(label);
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      className={`${styles.variantChip} ${selectedVariant === label ? styles.variantChipActive : ""} ${
+                        unavailable ? styles.variantChipDisabled : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedVariant(label);
+                        setVariantError(false);
+                      }}
+                      disabled={unavailable}
+                      aria-pressed={selectedVariant === label}
+                      title={unavailable ? `${label} — out of stock` : label}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              {variantError ? (
+                <p className={styles.variantErrorText}>
+                  Please select {category?.variantType === "AGE" ? "an age" : "a size"} before adding to cart.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className={styles.buyRow}>
             <QuantitySelector value={quantity} onChange={setQuantity} max={product.stock_quantity || 99} disabled={!inStock} />
-            <Button variant="dark" size="lg" onClick={handleAddToCart} loading={adding} disabled={!inStock}>
+            <Button variant="dark" size="lg" onClick={handleAddToCart} loading={adding} disabled={!canAddToCart}>
               Add to Cart
             </Button>
           </div>
-          <Button variant="primary" size="lg" className={styles.buyNow} onClick={handleBuyNow} disabled={!inStock}>
+          <Button variant="primary" size="lg" className={styles.buyNow} onClick={handleBuyNow} disabled={!canAddToCart}>
             Buy Now
           </Button>
 

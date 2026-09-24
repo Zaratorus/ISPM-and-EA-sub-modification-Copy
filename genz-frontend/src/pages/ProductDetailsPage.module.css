@@ -97,6 +97,92 @@
   line-height: 1.7;
 }
 
+/* ---- Size / Age variant selector --------------------------------------
+   Clean outlined boxes (not filled pills) — a deliberately different
+   treatment from the filter chips elsewhere, closer to how a real retail
+   PDP renders a size grid. Out-of-stock chips stay visible (so shoppers
+   can see the full run) but are struck through and inert. */
+.variantSection {
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: var(--space-5);
+}
+
+.variantLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.required {
+  color: var(--brand);
+}
+
+.variantChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.variantChip {
+  position: relative;
+  min-width: 48px;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.variantChip:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.variantChipActive {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: var(--text-on-brand);
+}
+
+.variantChipActive:hover:not(:disabled) {
+  color: var(--text-on-brand);
+}
+
+/* Crossed-out via a single diagonal line across the box, not just a muted
+   color — reads as "unavailable" at a glance the way opacity alone doesn't. */
+.variantChipDisabled {
+  color: var(--text-muted);
+  background: var(--bg-muted);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+}
+
+.variantChipDisabled::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 50%;
+  height: 1.5px;
+  background: var(--text-muted);
+  transform: rotate(-14deg);
+}
+
+.variantErrorText {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-xs);
+  color: var(--color-error);
+}
+
 /* A hairline above the purchase controls separates "what this is" from
    "how you buy it" without adding another boxed card to the page. */
 .buyRow {
@@ -187,7 +273,8 @@
   /* Full-width purchase controls: easier to hit, and the natural shape on
      a phone. */
   .buyRow,
-  .buyNow {
+  .buyNow,
+  .variantSection {
     max-width: none;
   }
   .buyRow > button,

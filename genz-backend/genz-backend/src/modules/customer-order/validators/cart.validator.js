@@ -4,6 +4,7 @@ const addCartItemSchema = {
   body: z.object({
     productId: z.coerce.number().int().positive(),
     quantity: z.coerce.number().int().positive(),
+    variantLabel: z.string().trim().min(1).max(20).optional(),
   }),
 };
 

@@ -47,6 +47,7 @@ export default function CartItemRow({ item }) {
         <Link to={`/products/${product.product_id}`} className={styles.name}>
           {product.name}
         </Link>
+        {item.variantLabel ? <p className={styles.variant}>Size: {item.variantLabel}</p> : null}
         <p className={styles.unitPrice}>{formatCurrency(product.price)} each</p>
         {outOfStock ? <Badge tone="error">Out of Stock</Badge> : null}
       </div>

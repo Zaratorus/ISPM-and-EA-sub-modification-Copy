@@ -11,7 +11,11 @@ import { apiClient } from "./client";
  */
 function normalizeCategory(row) {
   if (!row || typeof row !== "object") return row;
-  return { ...row, categoryId: row.category_id ?? row.categoryId };
+  return {
+    ...row,
+    categoryId: row.category_id ?? row.categoryId,
+    variantType: row.variant_type ?? row.variantType ?? "NONE",
+  };
 }
 
 // GET /categories — public

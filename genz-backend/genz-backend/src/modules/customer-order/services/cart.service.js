@@ -29,10 +29,10 @@ async function getCart(customerId) {
   return { cartId: cart.cart_id, items: items.map(toItemDTO) };
 }
 
-async function addItem(customerId, { productId, quantity }) {
+async function addItem(customerId, { productId, quantity, variantLabel }) {
   await inventoryService.getProduct(productId); // 404s if the product doesn't exist
   const cart = await getOrCreateActiveCart(customerId);
-  await cartRepository.addOrIncrementItem(cart.cart_id, productId, quantity);
+  await cartRepository.addOrIncrementItem(cart.cart_id, productId, variantLabel ?? '', quantity);
   return getCart(customerId);
 }
 
@@ -67,7 +67,12 @@ async function requireOwnedActiveItem(customerId, cartItemId) {
 }
 
 function toItemDTO(row) {
-  return { cartItemId: row.cart_item_id, productId: row.product_id, quantity: row.quantity };
+  return {
+    cartItemId: row.cart_item_id,
+    productId: row.product_id,
+    variantLabel: row.variant_label || null,
+    quantity: row.quantity,
+  };
 }
 
 module.exports = { getOrCreateActiveCart, getCart, addItem, updateItemQuantity, removeItem };
