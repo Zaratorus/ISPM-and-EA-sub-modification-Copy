@@ -7,10 +7,26 @@ import SearchOverlay from "../search/SearchOverlay";
 import styles from "./Navbar.module.css";
 
 // Slot count + widths (in ch, so they scale with the nav's own font) for the
-// category-link skeleton. Calibrated to the current live categories (Men's
-// Clothing / Kids' Clothing / Perfumes) so the header doesn't reflow once
-// useCategories() resolves — update this if the catalogue's categories change.
-const CATEGORY_SKELETON_WIDTHS = ["9ch", "14ch", "14ch"];
+// category-link skeleton, matching the fixed labels below so the header
+// doesn't reflow once useCategories() resolves.
+const CATEGORY_SKELETON_WIDTHS = ["5ch", "6ch", "11ch"];
+
+// Fixed top-nav category links, matching the logo's "Men's · Kids' · Fragrance"
+// subtitle. Each is resolved against the real catalogue (by name keyword) to
+// the matching category's route, so it filters via the same categoryId the
+// Shop filter bar uses; if a category isn't found (e.g. renamed, or the
+// catalogue failed to load), it falls back to a /shop name-search query —
+// the same fallback pattern already used by HomePage and Footer for Perfumes.
+const CATEGORY_NAV_LINKS = [
+  { label: "Men", keywords: ["men"], fallbackQuery: "men" },
+  { label: "Kids", keywords: ["kid"], fallbackQuery: "kids" },
+  { label: "Fragrance", keywords: ["fragrance", "perfume"], fallbackQuery: "perfume" },
+];
+
+function resolveCategoryLink(categories, keywords, fallbackQuery) {
+  const match = categories.find((cat) => keywords.some((kw) => cat.name.toLowerCase().includes(kw)));
+  return match ? `/category/${match.categoryId}` : `/shop?q=${encodeURIComponent(fallbackQuery)}`;
+}
 
 export default function Navbar() {
   const { categories, loading: categoriesLoading } = useCategories();
@@ -71,9 +87,13 @@ export default function Navbar() {
             ? CATEGORY_SKELETON_WIDTHS.map((width, i) => (
                 <span key={i} className={styles.linkSkeleton} style={{ width }} aria-hidden="true" />
               ))
-            : categories.slice(0, 4).map((cat) => (
-                <NavLink key={cat.categoryId} to={`/category/${cat.categoryId}`} className={navLinkClass}>
-                  {cat.name}
+            : CATEGORY_NAV_LINKS.map((link) => (
+                <NavLink
+                  key={link.label}
+                  to={resolveCategoryLink(categories, link.keywords, link.fallbackQuery)}
+                  className={navLinkClass}
+                >
+                  {link.label}
                 </NavLink>
               ))}
           <NavLink to="/about" className={navLinkClass}>
@@ -133,14 +153,14 @@ export default function Navbar() {
               <NavLink to="/" end className={navLinkClass} onClick={() => setMobileOpen(false)}>
                 Home
               </NavLink>
-              {categories.map((cat) => (
+              {CATEGORY_NAV_LINKS.map((link) => (
                 <NavLink
-                  key={cat.categoryId}
-                  to={`/category/${cat.categoryId}`}
+                  key={link.label}
+                  to={resolveCategoryLink(categories, link.keywords, link.fallbackQuery)}
                   className={navLinkClass}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {cat.name}
+                  {link.label}
                 </NavLink>
               ))}
               <NavLink to="/about" className={navLinkClass} onClick={() => setMobileOpen(false)}>
