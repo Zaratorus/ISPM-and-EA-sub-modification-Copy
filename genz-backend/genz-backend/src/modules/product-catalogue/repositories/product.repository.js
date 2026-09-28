@@ -24,7 +24,7 @@ const BASE_SELECT = `
  * actually use that chip set, so e.g. `?variant=M` never matches a Perfume.
  */
 async function search(filters) {
-  const where = ['p.status = "ACTIVE"'];
+  const where = ["p.status = 'ACTIVE'"];
   const params = [];
   let join = '';
 
@@ -147,7 +147,7 @@ async function findOutOfStockVariantsByProductIds(productIds) {
 async function create({ categoryId, name, description, price, brand }) {
   const productId = await withTransaction(async (conn) => {
     const [result] = await conn.query(
-      'INSERT INTO products (category_id, name, description, price, brand, status) VALUES (?, ?, ?, ?, ?, "ACTIVE")',
+      "INSERT INTO products (category_id, name, description, price, brand, status) VALUES (?, ?, ?, ?, ?, 'ACTIVE')",
       [categoryId, name, description ?? null, price, brand ?? null]
     );
     await conn.query('INSERT INTO inventory_stock (product_id, quantity) VALUES (?, ?)', [result.insertId, 0]);
@@ -167,7 +167,7 @@ async function update(productId, { categoryId, name, description, price, brand }
 async function discontinue(productId) {
   // Soft-delete only, per Physical Schema Design V1.0 Section 9's RESTRICT
   // policy on Product's child references — a hard DELETE is never issued.
-  await pool.query('UPDATE products SET status = "DISCONTINUED" WHERE product_id = ?', [productId]);
+  await pool.query("UPDATE products SET status = 'DISCONTINUED' WHERE product_id = ?", [productId]);
   return findById(productId);
 }
 

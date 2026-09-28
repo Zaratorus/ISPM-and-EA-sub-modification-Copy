@@ -112,6 +112,11 @@ module.exports = {
     password: required('DB_PASSWORD'),
     database: required('DB_NAME'),
     connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '10', 10),
+    // Optional: path to a CA certificate (e.g. a managed provider's ca.pem,
+    // such as Aiven's). When set, connections use verified TLS. When unset
+    // (the default for local MySQL, which has no TLS listener), the pool
+    // connects in plain TCP exactly as before.
+    sslCaPath: process.env.DB_SSL_CA_PATH || undefined,
   },
 
   customerAuth: {

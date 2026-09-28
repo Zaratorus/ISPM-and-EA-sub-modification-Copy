@@ -15,7 +15,7 @@ const { pool } = require('../../../shared/db/connection');
 
 async function create({ orderId, deliveryAddress, deliveryPersonReference }) {
   const [result] = await pool.query(
-    'INSERT INTO deliveries (order_id, delivery_address, delivery_person_reference, status) VALUES (?, ?, ?, "ASSIGNED")',
+    "INSERT INTO deliveries (order_id, delivery_address, delivery_person_reference, status) VALUES (?, ?, ?, 'ASSIGNED')",
     [orderId, deliveryAddress, deliveryPersonReference ?? null]
   );
   return findById(result.insertId);

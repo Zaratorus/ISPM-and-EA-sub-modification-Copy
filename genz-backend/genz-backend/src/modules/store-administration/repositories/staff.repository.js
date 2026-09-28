@@ -26,7 +26,7 @@ async function findById(staffAdminUserId) {
 
 async function create({ name, roleId }) {
   const [result] = await pool.query(
-    'INSERT INTO staff_admin_users (role_id, name, status) VALUES (?, ?, "ACTIVE")',
+    "INSERT INTO staff_admin_users (role_id, name, status) VALUES (?, ?, 'ACTIVE')",
     [roleId, name]
   );
   return findById(result.insertId);

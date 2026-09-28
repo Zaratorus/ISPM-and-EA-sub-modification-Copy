@@ -21,7 +21,7 @@ const ORDER_BASE_SELECT = `
  */
 async function createOrder({ customerId, deliveryAddress, whatsappCheckoutReference }, conn) {
   const [result] = await conn.query(
-    'INSERT INTO orders (customer_id, delivery_address, whatsapp_checkout_reference, status) VALUES (?, ?, ?, "PENDING")',
+    "INSERT INTO orders (customer_id, delivery_address, whatsapp_checkout_reference, status) VALUES (?, ?, ?, 'PENDING')",
     [customerId, deliveryAddress, whatsappCheckoutReference ?? null]
   );
   return result.insertId;

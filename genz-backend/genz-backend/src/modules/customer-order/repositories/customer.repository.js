@@ -33,7 +33,7 @@ async function findById(customerId) {
 
 async function create({ name, contactInfo, credentialsReference }) {
   const [result] = await pool.query(
-    'INSERT INTO customers (name, contact_info, credentials_reference, status) VALUES (?, ?, ?, "ACTIVE")',
+    "INSERT INTO customers (name, contact_info, credentials_reference, status) VALUES (?, ?, ?, 'ACTIVE')",
     [name, contactInfo, credentialsReference]
   );
   return findById(result.insertId);

@@ -11,6 +11,7 @@
  * dedicated connection, BEGIN/COMMIT/ROLLBACK explicitly, and release it.
  */
 
+const fs = require('fs');
 const mysql = require('mysql2/promise');
 const config = require('../../config/env.config');
 
@@ -24,6 +25,12 @@ const pool = mysql.createPool({
   connectionLimit: config.db.connectionLimit,
   queueLimit: 0,
   decimalNumbers: false, // keep DECIMAL columns as strings to avoid float precision loss
+  // Verified TLS when DB_SSL_CA_PATH is set (managed providers such as
+  // Aiven require this); plain TCP otherwise, matching local MySQL's
+  // existing default so nothing changes for the local dev setup.
+  ...(config.db.sslCaPath
+    ? { ssl: { ca: fs.readFileSync(config.db.sslCaPath), rejectUnauthorized: true } }
+    : {}),
 });
 
 /**
