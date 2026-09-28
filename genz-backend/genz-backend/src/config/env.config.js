@@ -113,9 +113,10 @@ module.exports = {
     database: required('DB_NAME'),
     connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '10', 10),
     // Optional: path to a CA certificate (e.g. a managed provider's ca.pem,
-    // such as Aiven's). When set, connections use verified TLS. When unset
-    // (the default for local MySQL, which has no TLS listener), the pool
-    // connects in plain TCP exactly as before.
+    // such as Aiven's). When set, connections use verified TLS. When unset,
+    // shared/db/connection.js falls back to unverified TLS in production
+    // (the provider still requires TLS even without a CA on disk) or plain
+    // TCP in development (matching local MySQL, which has no TLS listener).
     sslCaPath: process.env.DB_SSL_CA_PATH || undefined,
   },
 

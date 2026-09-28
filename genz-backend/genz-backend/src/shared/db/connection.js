@@ -15,6 +15,31 @@ const fs = require('fs');
 const mysql = require('mysql2/promise');
 const config = require('../../config/env.config');
 
+// Aiven (and most managed MySQL providers) refuse any connection that
+// doesn't negotiate TLS — unlike local MySQL, which has no TLS listener at
+// all. Three cases:
+//   - DB_SSL_CA_PATH set: verified TLS against that CA — the safest option,
+//     use it whenever the provider's CA cert is available on disk (e.g. a
+//     Render secret file).
+//   - unset, in production: the provider still requires TLS, but with no CA
+//     on disk there's nothing to verify the server cert against. Connect
+//     with rejectUnauthorized: false (encrypted, not verified) rather than
+//     fail the handshake outright — this is what actually lets Render reach
+//     Aiven when DB_SSL_CA_PATH hasn't been wired up yet.
+//   - unset, outside production: connect in plain TCP, matching local
+//     MySQL's existing default so nothing changes for local dev.
+function sslConfig() {
+  if (config.db.sslCaPath) {
+    return { ca: fs.readFileSync(config.db.sslCaPath), rejectUnauthorized: true };
+  }
+  if (config.env === 'production') {
+    return { rejectUnauthorized: false };
+  }
+  return undefined;
+}
+
+const ssl = sslConfig();
+
 const pool = mysql.createPool({
   host: config.db.host,
   port: config.db.port,
@@ -25,12 +50,7 @@ const pool = mysql.createPool({
   connectionLimit: config.db.connectionLimit,
   queueLimit: 0,
   decimalNumbers: false, // keep DECIMAL columns as strings to avoid float precision loss
-  // Verified TLS when DB_SSL_CA_PATH is set (managed providers such as
-  // Aiven require this); plain TCP otherwise, matching local MySQL's
-  // existing default so nothing changes for the local dev setup.
-  ...(config.db.sslCaPath
-    ? { ssl: { ca: fs.readFileSync(config.db.sslCaPath), rejectUnauthorized: true } }
-    : {}),
+  ...(ssl ? { ssl } : {}),
 });
 
 /**
