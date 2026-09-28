@@ -15,7 +15,22 @@
 
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_URL || "http://localhost:4000/api/v1";
+// The localhost fallback only makes sense for local dev — Vite inlines this
+// value at build time, so a production build with VITE_API_URL unset would
+// otherwise silently ship a base URL of every visitor's own machine, and
+// every request would fail as an unexplained NETWORK_ERROR. In a production
+// build, missing the env var is a deploy misconfiguration: fail loudly in
+// the console instead of pointing at localhost.
+const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:4000/api/v1" : undefined);
+
+if (!baseURL && import.meta.env.PROD) {
+  // eslint-disable-next-line no-console
+  console.error(
+    "VITE_API_URL is not set. Set it in the hosting platform's environment variables " +
+      "(e.g. Vercel → Project Settings → Environment Variables) to the deployed genz-backend's " +
+      "URL, including its /api/v1 prefix — every API call will otherwise fail."
+  );
+}
 
 export const CUSTOMER_TOKEN_KEY = "genz_customer_token";
 export const CUSTOMER_PROFILE_KEY = "genz_customer_profile";
