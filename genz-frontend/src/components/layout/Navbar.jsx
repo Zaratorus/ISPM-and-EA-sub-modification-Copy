@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useCategories } from "../../hooks/useCategories";
 import { useCustomerAuth } from "../../context/CustomerAuthContext";
 import { useCart } from "../../context/CartContext";
@@ -28,11 +28,25 @@ function resolveCategoryLink(categories, keywords, fallbackQuery) {
   return match ? `/category/${match.categoryId}` : `/shop?q=${encodeURIComponent(fallbackQuery)}`;
 }
 
+// When a category can't be matched yet, every CATEGORY_NAV_LINKS entry falls
+// back to the same "/shop" pathname, differentiated only by its ?q= query.
+// NavLink's built-in active matching compares pathname only (it ignores
+// search), so those fallback links would all light up together while on
+// /shop. This checks pathname AND, for a fallback target, the query — so
+// only the one link whose target actually matches the current URL is active.
+function isCategoryLinkActive(to, location) {
+  const [pathname, search] = to.split("?");
+  if (location.pathname !== pathname) return false;
+  if (!search) return true;
+  return new URLSearchParams(location.search).get("q") === new URLSearchParams(search).get("q");
+}
+
 export default function Navbar() {
   const { categories, loading: categoriesLoading } = useCategories();
   const { isAuthenticated, customer } = useCustomerAuth();
   const { itemCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -87,15 +101,20 @@ export default function Navbar() {
             ? CATEGORY_SKELETON_WIDTHS.map((width, i) => (
                 <span key={i} className={styles.linkSkeleton} style={{ width }} aria-hidden="true" />
               ))
-            : CATEGORY_NAV_LINKS.map((link) => (
-                <NavLink
-                  key={link.label}
-                  to={resolveCategoryLink(categories, link.keywords, link.fallbackQuery)}
-                  className={navLinkClass}
-                >
-                  {link.label}
-                </NavLink>
-              ))}
+            : CATEGORY_NAV_LINKS.map((link) => {
+                const to = resolveCategoryLink(categories, link.keywords, link.fallbackQuery);
+                const active = isCategoryLinkActive(to, location);
+                return (
+                  <Link
+                    key={link.label}
+                    to={to}
+                    className={`${styles.link} ${active ? styles.linkActive : ""}`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
           <NavLink to="/about" className={navLinkClass}>
             About
           </NavLink>
@@ -153,16 +172,21 @@ export default function Navbar() {
               <NavLink to="/" end className={navLinkClass} onClick={() => setMobileOpen(false)}>
                 Home
               </NavLink>
-              {CATEGORY_NAV_LINKS.map((link) => (
-                <NavLink
-                  key={link.label}
-                  to={resolveCategoryLink(categories, link.keywords, link.fallbackQuery)}
-                  className={navLinkClass}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </NavLink>
-              ))}
+              {CATEGORY_NAV_LINKS.map((link) => {
+                const to = resolveCategoryLink(categories, link.keywords, link.fallbackQuery);
+                const active = isCategoryLinkActive(to, location);
+                return (
+                  <Link
+                    key={link.label}
+                    to={to}
+                    className={`${styles.link} ${active ? styles.linkActive : ""}`}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
               <NavLink to="/about" className={navLinkClass} onClick={() => setMobileOpen(false)}>
                 About
               </NavLink>

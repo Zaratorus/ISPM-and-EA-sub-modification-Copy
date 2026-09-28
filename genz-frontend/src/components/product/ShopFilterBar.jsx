@@ -5,6 +5,75 @@ import { SIZE_LABELS, AGE_LABELS } from "../../config/variants";
 import FilterPopover from "./FilterPopover";
 import styles from "./ShopFilterBar.module.css";
 
+// Single brand-list popover — used by the fixed Men/Kids views (clothing
+// brands only) and the fixed Fragrance view (perfume brands only). The full
+// /shop bar's Brand popover is its own JSX below since it can show both
+// lists at once (grouped by sub-label) when no category is selected yet.
+function BrandPopover({ label, active, open, onOpenChange, brands, selectedBrand, onSelect }) {
+  return (
+    <FilterPopover label={label} active={active} open={open} onOpenChange={onOpenChange}>
+      <button
+        type="button"
+        className={`${styles.chip} ${!selectedBrand ? styles.chipActive : ""} ${styles.blockChip}`}
+        onClick={() => onSelect(undefined)}
+      >
+        All Brands
+      </button>
+      <div className={styles.chipRow}>
+        {brands.map((brand) => (
+          <button
+            key={brand}
+            type="button"
+            className={`${styles.chip} ${selectedBrand === brand ? styles.chipActive : ""}`}
+            onClick={() => onSelect(brand)}
+          >
+            {brand}
+          </button>
+        ))}
+      </div>
+    </FilterPopover>
+  );
+}
+
+// Shared Price Range popover — used both by the full /shop bar and by each
+// fixed Men/Kids/Fragrance category view, so the min/max inputs and their
+// draft-state wiring only live in one place.
+function PriceRangePopover({ label, active, open, onOpenChange, priceDraft, setPriceDraft, onApply }) {
+  return (
+    <FilterPopover label={label} active={active} open={open} onOpenChange={onOpenChange}>
+      <p className={styles.subLabel}>Price Range (LKR)</p>
+      <div className={styles.priceRow}>
+        <input
+          type="number"
+          min="0"
+          className={styles.priceInput}
+          placeholder="Min"
+          aria-label="Minimum price (LKR)"
+          value={priceDraft.minPrice ?? ""}
+          onChange={(e) =>
+            setPriceDraft((d) => ({ ...d, minPrice: e.target.value ? Number(e.target.value) : undefined }))
+          }
+        />
+        <span aria-hidden="true">–</span>
+        <input
+          type="number"
+          min="0"
+          className={styles.priceInput}
+          placeholder="Max"
+          aria-label="Maximum price (LKR)"
+          value={priceDraft.maxPrice ?? ""}
+          onChange={(e) =>
+            setPriceDraft((d) => ({ ...d, maxPrice: e.target.value ? Number(e.target.value) : undefined }))
+          }
+        />
+      </div>
+      <button type="button" className={styles.applyBtn} onClick={onApply}>
+        Apply
+      </button>
+    </FilterPopover>
+  );
+}
+
 /**
  * Horizontal top filter bar — replaces the old sidebar/bottom-sheet
  * ProductFilters. Only exposes filters GET /products actually supports
@@ -49,6 +118,12 @@ export default function ShopFilterBar({ filters, onChange, fixedCategoryId }) {
   const showSizes = !selectedCategory || categoryVariantType === "SIZE";
   const showAges = !selectedCategory || categoryVariantType === "AGE";
 
+  // "Size / Age" only makes sense when both chip sets are actually on offer
+  // (no category selected yet). Once a category narrows it to one set, the
+  // pill and its reset option should say what's actually in there.
+  const variantFilterNoun =
+    categoryVariantType === "SIZE" ? "Size" : categoryVariantType === "AGE" ? "Age" : "Size / Age";
+
   // If switching category makes the current brand/variant selection
   // inapplicable (e.g. a Fragrance brand while viewing Men's Clothing, or
   // any Size/Age chip while viewing Perfumes), drop it rather than leave a
@@ -75,37 +150,126 @@ export default function ShopFilterBar({ filters, onChange, fixedCategoryId }) {
       ? `Price: ${filters.minPrice ?? "0"}–${filters.maxPrice ?? "∞"}`
       : "Price Range";
 
-  return (
-    <div className={styles.bar}>
-      <div className={styles.pills}>
-        {!fixedCategoryId ? (
+  // Fixed Men/Kids/Fragrance nav routes (/category/:id, see Navbar's
+  // CATEGORY_NAV_LINKS) drop the full Category picker (it's redundant — the
+  // route already fixes the category) but keep Brand, the one chip filter
+  // that applies to that category's variantType (Size for Men, Age for
+  // Kids), and Price Range. Fragrance (variantType NONE) has no Size/Age
+  // filter and its Brand list is perfume brands only; Men/Kids get clothing
+  // brands only. Until the category itself has resolved (so its
+  // variantType is known), render nothing rather than flash the full bar.
+  if (fixedCategoryId) {
+    if (!selectedCategory) return null;
+
+    const pricePopover = (
+      <PriceRangePopover
+        label={priceLabel}
+        active={Boolean(filters.minPrice || filters.maxPrice)}
+        open={openPopover === "price"}
+        onOpenChange={(v) => setOpenPopover(v ? "price" : null)}
+        priceDraft={priceDraft}
+        setPriceDraft={setPriceDraft}
+        onApply={() => selectAndClose({ minPrice: priceDraft.minPrice, maxPrice: priceDraft.maxPrice })}
+      />
+    );
+
+    if (categoryVariantType === "NONE") {
+      return (
+        <div className={styles.bar}>
+          <div className={styles.pills}>
+            <BrandPopover
+              label={filters.brand || "Brand"}
+              active={Boolean(filters.brand)}
+              open={openPopover === "brand"}
+              onOpenChange={(v) => setOpenPopover(v ? "brand" : null)}
+              brands={FRAGRANCE_BRANDS}
+              selectedBrand={filters.brand}
+              onSelect={(brand) => selectAndClose({ brand })}
+            />
+            {pricePopover}
+          </div>
+        </div>
+      );
+    }
+
+    const variantLabels = categoryVariantType === "SIZE" ? SIZE_LABELS : AGE_LABELS;
+    const variantNoun = categoryVariantType === "SIZE" ? "Size" : "Age";
+    return (
+      <div className={styles.bar}>
+        <div className={styles.pills}>
+          <BrandPopover
+            label={filters.brand || "Brand"}
+            active={Boolean(filters.brand)}
+            open={openPopover === "brand"}
+            onOpenChange={(v) => setOpenPopover(v ? "brand" : null)}
+            brands={CLOTHING_BRANDS}
+            selectedBrand={filters.brand}
+            onSelect={(brand) => selectAndClose({ brand })}
+          />
           <FilterPopover
-            label={selectedCategory ? selectedCategory.name : "Category"}
-            active={Boolean(selectedCategory)}
-            open={openPopover === "category"}
-            onOpenChange={(v) => setOpenPopover(v ? "category" : null)}
+            label={filters.variant || variantNoun}
+            active={Boolean(filters.variant)}
+            open={openPopover === "variant"}
+            onOpenChange={(v) => setOpenPopover(v ? "variant" : null)}
           >
+            <button
+              type="button"
+              className={`${styles.chip} ${!filters.variant ? styles.chipActive : ""} ${styles.blockChip}`}
+              onClick={() => selectAndClose({ variant: undefined })}
+            >
+              Any {variantNoun}
+            </button>
             <div className={styles.chipRow}>
-              <button
-                type="button"
-                className={`${styles.chip} ${!filters.categoryId ? styles.chipActive : ""}`}
-                onClick={() => selectAndClose({ categoryId: undefined })}
-              >
-                All
-              </button>
-              {categories.map((cat) => (
+              {variantLabels.map((label) => (
                 <button
-                  key={cat.categoryId}
+                  key={label}
                   type="button"
-                  className={`${styles.chip} ${Number(filters.categoryId) === cat.categoryId ? styles.chipActive : ""}`}
-                  onClick={() => selectAndClose({ categoryId: cat.categoryId })}
+                  className={`${styles.chip} ${filters.variant === label ? styles.chipActive : ""}`}
+                  onClick={() => selectAndClose({ variant: label })}
                 >
-                  {cat.name}
+                  {label}
                 </button>
               ))}
             </div>
           </FilterPopover>
-        ) : null}
+          {pricePopover}
+        </div>
+      </div>
+    );
+  }
+
+  // Plain /shop (no fixedCategoryId — the fixed Men/Kids/Fragrance routes
+  // returned above already) keeps the full bar: every category is a valid
+  // choice, so Category/Brand/Size-Age/Price/Clear-all all apply.
+  return (
+    <div className={styles.bar}>
+      <div className={styles.pills}>
+        <FilterPopover
+          label={selectedCategory ? selectedCategory.name : "Category"}
+          active={Boolean(selectedCategory)}
+          open={openPopover === "category"}
+          onOpenChange={(v) => setOpenPopover(v ? "category" : null)}
+        >
+          <div className={styles.chipRow}>
+            <button
+              type="button"
+              className={`${styles.chip} ${!filters.categoryId ? styles.chipActive : ""}`}
+              onClick={() => selectAndClose({ categoryId: undefined })}
+            >
+              All
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.categoryId}
+                type="button"
+                className={`${styles.chip} ${Number(filters.categoryId) === cat.categoryId ? styles.chipActive : ""}`}
+                onClick={() => selectAndClose({ categoryId: cat.categoryId })}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </FilterPopover>
 
         <FilterPopover
           label={filters.brand || "Brand"}
@@ -158,7 +322,7 @@ export default function ShopFilterBar({ filters, onChange, fixedCategoryId }) {
 
         {showSizeAgeFilter ? (
           <FilterPopover
-            label={filters.variant || "Size / Age"}
+            label={filters.variant || variantFilterNoun}
             active={Boolean(filters.variant)}
             open={openPopover === "variant"}
             onOpenChange={(v) => setOpenPopover(v ? "variant" : null)}
@@ -168,7 +332,7 @@ export default function ShopFilterBar({ filters, onChange, fixedCategoryId }) {
               className={`${styles.chip} ${!filters.variant ? styles.chipActive : ""} ${styles.blockChip}`}
               onClick={() => selectAndClose({ variant: undefined })}
             >
-              Any Size / Age
+              Any {variantFilterNoun}
             </button>
             {showSizes ? (
               <>
@@ -207,52 +371,21 @@ export default function ShopFilterBar({ filters, onChange, fixedCategoryId }) {
           </FilterPopover>
         ) : null}
 
-        <FilterPopover
+        <PriceRangePopover
           label={priceLabel}
           active={Boolean(filters.minPrice || filters.maxPrice)}
           open={openPopover === "price"}
           onOpenChange={(v) => setOpenPopover(v ? "price" : null)}
-        >
-          <p className={styles.subLabel}>Price Range (LKR)</p>
-          <div className={styles.priceRow}>
-            <input
-              type="number"
-              min="0"
-              className={styles.priceInput}
-              placeholder="Min"
-              aria-label="Minimum price (LKR)"
-              value={priceDraft.minPrice ?? ""}
-              onChange={(e) =>
-                setPriceDraft((d) => ({ ...d, minPrice: e.target.value ? Number(e.target.value) : undefined }))
-              }
-            />
-            <span aria-hidden="true">–</span>
-            <input
-              type="number"
-              min="0"
-              className={styles.priceInput}
-              placeholder="Max"
-              aria-label="Maximum price (LKR)"
-              value={priceDraft.maxPrice ?? ""}
-              onChange={(e) =>
-                setPriceDraft((d) => ({ ...d, maxPrice: e.target.value ? Number(e.target.value) : undefined }))
-              }
-            />
-          </div>
-          <button
-            type="button"
-            className={styles.applyBtn}
-            onClick={() => selectAndClose({ minPrice: priceDraft.minPrice, maxPrice: priceDraft.maxPrice })}
-          >
-            Apply
-          </button>
-        </FilterPopover>
+          priceDraft={priceDraft}
+          setPriceDraft={setPriceDraft}
+          onApply={() => selectAndClose({ minPrice: priceDraft.minPrice, maxPrice: priceDraft.maxPrice })}
+        />
 
         {hasActiveFilters ? (
           <button
             type="button"
             className={styles.clearAll}
-            onClick={() => onChange({ page: 1, limit: filters.limit, categoryId: fixedCategoryId || undefined })}
+            onClick={() => onChange({ page: 1, limit: filters.limit })}
           >
             Clear all
           </button>
